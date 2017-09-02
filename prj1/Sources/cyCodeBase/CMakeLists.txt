@@ -1,0 +1,7 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+set(cyCodeBase_SRC 
+	${CMAKE_CURRENT_SOURCE_DIR}/cyCore.h
+	${CMAKE_CURRENT_SOURCE_DIR}/cyMatrix.h
+	${CMAKE_CURRENT_SOURCE_DIR}/cyPoint.h
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	PARENT_SCOPE)
