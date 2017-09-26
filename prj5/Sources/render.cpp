@@ -9,7 +9,7 @@ extern MaterialList materials;
 extern LightList lights;
 
 std::thread *renderThread;
-std::atomic_int pixelsDone = 0;
+std::atomic_int pixelsDone;
 
 /* Initializes a struct of common camera ray information */
 CommonRayInfo getCommonCameraRayInfo() {

@@ -1,5 +1,6 @@
 #include "materials.h"
 #include "render.h"
+#include <math.h>
 
 extern Camera camera;
 extern RenderImage renderImage;
@@ -88,10 +89,10 @@ void frensel(const cyPoint3f &I, const cyPoint3f &N, const float &ior, bool fron
 	float iorV = 1.f, iorT = ior;
 
 	if (!front) std::swap(iorV, iorT);
-	float sint = iorV / iorT * std::sqrtf(MAX(0.f, 1.f - cosi * cosi));
+	float sint = iorV / iorT * sqrtf(MAX(0.f, 1.f - cosi * cosi));
 	if (sint >= 1.f) kr = 1.f; // Total internal reflection.
 	else {
-		float cost = std::sqrtf(MAX(0.f, 1.f - sint * sint));
+		float cost = sqrtf(MAX(0.f, 1.f - sint * sint));
 		cosi = fabsf(cosi);
 		float Rs = ((iorT * cosi) - (iorV * cost)) / ((iorT * cosi) + (iorV * cost));
 		float Rp = ((iorV * cosi) - (iorT * cost)) / ((iorV * cosi) + (iorT * cost));
