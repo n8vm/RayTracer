@@ -15,7 +15,7 @@ Ray refract(const cyPoint3f &I, const cyPoint3f &N, const cyPoint3f &P, const fl
 	// c1 = N % I
 	// c2 = sqrt(1 - pow(n,2) * (1 - pow(c1, 2))), if imaginary => internal reflection
 	
-	float cosi = max(-1.f, min(N % I, 1.f));
+	float cosi = MAX(-1.f, MIN(N % I, 1.f));
 	float iorV = 1.f, iorT = ior;
 
 	cyPoint3f N_ = N;
@@ -50,7 +50,7 @@ Ray refract2(const cyPoint3f &I, const cyPoint3f &N, const cyPoint3f &P, const f
 	cyPoint3f S = N ^ ((N ^ -I) / (N ^ -I).Length());
 
 	// T = -N*cos(theta2) + s*sin(theta2)
-	float cosi = max(-1.f, min(N % I, 1.f));
+	float cosi = MAX(-1.f, MIN(N % I, 1.f));
 	cyPoint3f N_ = N;
 	float iorV = 1.f, iorT = ior;
 	if (front) {
@@ -84,14 +84,14 @@ Ray refract2(const cyPoint3f &I, const cyPoint3f &N, const cyPoint3f &P, const f
 
 
 void frensel(const cyPoint3f &I, const cyPoint3f &N, const float &ior, bool front, float &kr) {
-	float cosi = max(-1.f, min(N % I, 1.f));
+	float cosi = MAX(-1.f, MIN(N % I, 1.f));
 	float iorV = 1.f, iorT = ior;
 
 	if (!front) std::swap(iorV, iorT);
-	float sint = iorV / iorT * std::sqrtf(max(0.f, 1.f - cosi * cosi));
+	float sint = iorV / iorT * std::sqrtf(MAX(0.f, 1.f - cosi * cosi));
 	if (sint >= 1.f) kr = 1.f; // Total internal reflection.
 	else {
-		float cost = std::sqrtf(max(0.f, 1.f - sint * sint));
+		float cost = std::sqrtf(MAX(0.f, 1.f - sint * sint));
 		cosi = fabsf(cosi);
 		float Rs = ((iorT * cosi) - (iorV * cost)) / ((iorT * cosi) + (iorV * cost));
 		float Rp = ((iorV * cosi) - (iorT * cost)) / ((iorV * cosi) + (iorT * cost));
@@ -141,9 +141,9 @@ Color MtlBlinn::Shade(const Ray &ray, const HitInfo &hInfo, const LightList &lig
 				if (refrHInfo.node != NULL) {
 					const Material *hitMat = refrHInfo.node->GetMaterial();
 					Color finalRefr = ((refraction * absorped) - kr);
-					finalRefr.r = max(finalRefr.r, 0);
-					finalRefr.g = max(finalRefr.g, 0);
-					finalRefr.b = max(finalRefr.b, 0);
+					finalRefr.r = MAX(finalRefr.r, 0);
+					finalRefr.g = MAX(finalRefr.g, 0);
+					finalRefr.b = MAX(finalRefr.b, 0);
 					refrCol += hitMat->Shade(T, refrHInfo, lights, bounceCount - 1) * finalRefr;
 				}
 			}

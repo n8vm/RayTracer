@@ -15,8 +15,8 @@ bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 		float quotient = 1.f / (2.0f * a);
 		float t1 = (-b + sqrtDis) * quotient;
 		float t2 = (-b - sqrtDis) * quotient;
-		float tmax = max(t1, t2);
-		float tmin = min(t1, t2);
+		float tmax = MAX(t1, t2);
+		float tmin = MIN(t1, t2);
 
 		// tf is how many model space rays needed to reach q. 
 		// Note that the model space ray is NOT normalized, so 

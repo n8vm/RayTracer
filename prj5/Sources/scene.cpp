@@ -14,8 +14,8 @@ bool Box::IntersectRay(const Ray &r, float t_max) const {
 	float t5 = (pmin.z - r.p.z) * dirfrac.z;
 	float t6 = (pmax.z - r.p.z) * dirfrac.z;
 
-	float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
-	float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+	float tmin = MAX(MAX(MIN(t1, t2), MIN(t3, t4)), MIN(t5, t6));
+	float tmax = MIN(MIN(MAX(t1, t2), MAX(t3, t4)), MAX(t5, t6));
 
 	if (tmax < 0) // AABB is behind us
 		return false;
