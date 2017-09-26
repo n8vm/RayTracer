@@ -1,0 +1,61 @@
+<xml>
+  <scene>
+    <!-- Objects -->
+    <object type="obj" name="teapot-low.obj" material="red">
+      <rotate angle="-90" x="1"/>
+      <scale value=".15"/>
+      <translate x="-2" y="-2" z="-10"/>
+    </object>
+
+    <object type="obj" name="teapot-low.obj" material="blue">
+      <rotate angle="-90" x="1"/>
+      <rotate angle="180" y="1"/>
+      <scale value=".15"/>
+      <translate x="2" y="-2" z="-12"/>
+    </object>
+
+<!--     <object type="plane" name="plane1" material="red">
+      <scale value="3.0"/>
+      <translate x="-2" y="0" z="-10"/>
+    </object>
+
+    <object type="plane" name="plane1" material="blue">
+      <scale value="1.5"/>
+      <translate x="2" y="0" z="-12"/>
+    </object> -->
+
+    <!-- Materials -->
+    <material type="blinn" name="red">
+      <diffuse  r="1.0" g="0.0" b="0.0"/>
+      <specular r="1.0" g="1.0" b="0.9" value="0.8"/>
+      <glossiness value="10"/>
+      <!-- <refraction value="0.0" index="0"/> -->
+      <!-- <absorption r="0.01" g="0.001" b="0.0001"/> -->
+    </material>
+
+    <material type="blinn" name="blue">
+      <diffuse  r="0.0" g="0.0" b="1.0"/>
+      <specular r="1.0" g="1.0" b="1.0" value="0.8"/>
+      <glossiness value="10"/>
+      <!-- <refraction value="0.0" index="0"/> -->
+      <!-- <absorption r="0.01" g="0.001" b="0.0001"/> -->
+    </material>
+       <!-- Lights -->
+    <light type="ambient" name="ambientLight">
+      <intensity value="0.1"/>
+    </light>
+    <light type="point" name="pointLight">
+      <intensity value="0.5"/>
+      <position x="0" y="0" z="-5"/>
+    </light>
+  </scene>
+ 
+  <camera>
+    <position x="0" y="0" z="0"/>
+    <target x="0" y="0" z="-1"/>
+    <up x="0" y="1" z="0"/>
+    <fov value="40"/>
+    <width value="800"/>
+    <height value="600"/>
+  </camera>
+</xml>

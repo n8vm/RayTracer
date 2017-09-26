@@ -1,0 +1,90 @@
+<xml>
+  <scene>
+    <!-- Objects -->
+    <object name="box">
+      <translate x="0" y="0" z="12"/>
+      <object type="plane" name="WallBottom" material="wall">
+        <scale value="32"/>
+        <translate z="-12"/>
+      </object>
+      <object type="plane" name="WallTop" material="wall">
+        <scale value="32"/>
+        <rotate angle="180" x="1"/>
+        <translate z="12"/>
+      </object>
+      <object type="plane" name="WallBack" material="wall">
+        <scale value="32"/>
+        <rotate angle="90" x="1"/>
+        <translate y="20"/>
+      </object>
+      <object type="plane" name="WallLeft" material="wall">
+        <scale value="32"/>
+        <rotate angle="90" y="1"/>
+        <translate x="-15"/>
+      </object>
+      <object type="plane" name="WallRight" material="wall">
+        <scale value="32"/>
+        <rotate angle="-90" y="1"/>
+        <translate x="15"/>
+      </object>
+    </object>
+
+    <object name="luxolamp">
+      <object type="obj" name="Luxo.obj" material="lamp">
+        <scale value="0.5"/>
+        <!-- <rotate angle="" z="1"/> -->
+        <translate x="15" y="0" z="0"/>
+        <rotate angle="40" z="1"/>
+      </object>
+    </object>
+
+    <object name="sphere">
+      <object type="sphere" name="sphere2" material="ball">
+        <scale value="4"/>
+        <rotate angle="30" y="1"/>
+        <translate x="-8" y="-6" z="4"/>
+      </object>
+    </object>
+ 
+    <!-- Materials -->
+    <material type="blinn" name="wall">
+      <diffuse  r=".57" g=".71" b=".90"/>
+      <specular value="0"/>
+    </material>
+    
+    <material type="blinn" name="ball">
+      <diffuse  r="0.99" g="0.94" b="0.39"/>
+      <specular r="1.0" g="1.0" b="1.0" value="0.7"/>
+      <glossiness value="20"/>
+      <reflection value="0.1"/>
+    </material>
+
+    <material type="blinn" name="lamp">
+      <diffuse  r="0.83" g="0.81" b="0.90"/>
+      <specular r="1.0" g="1.0" b="1.0" value="0.8"/>
+      <glossiness value="10"/>
+      <reflection value="0.5"/>
+      
+      <!-- <refraction value="0.8" index="1.52"/>
+      <absorption r="0.01" g="0.001" b="0.0001"/> -->
+    </material>
+ 
+    <!-- Lights -->
+    <light type="ambient" name="ambientLight">
+      <intensity value="0.1"/>
+    </light>
+    <light type="point" name="pointLight">
+      <intensity value="0.5"/>
+      <position x="0" y="0" z="22"/>
+    </light>
+  </scene>
+ 
+  <camera>
+    <position x="0" y="-60" z="12"/>
+    <target x="0" y="0" z="12"/>
+    <up x="0" y="0" z="1"/>
+    <fov value="30"/>
+    <width value="800"/>
+    <height value="600"/>
+  </camera>
+</xml>

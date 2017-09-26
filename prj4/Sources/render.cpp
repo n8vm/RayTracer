@@ -64,6 +64,7 @@ Ray getCameraRay(int i, int j, const CommonRayInfo &cri) {
 }
 
 static int pickedx = -1, pickedy = -1;
+static bool showNormals = false;
 void render() {
 	Color24* img = renderImage.GetPixels();
 	float* zBuffer = renderImage.GetZBuffer();
@@ -75,7 +76,6 @@ void render() {
 	// TODO: parallize this and make asynchronous
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
-
 			if (pickedx == x && pickedy == y) {
 				std::cout << std::endl;
 			}
@@ -86,10 +86,12 @@ void render() {
 			Color24 pixelColor = getBlack();
 			if (info.node) {
 				const Material *hitMat = info.node->GetMaterial();
-				/*pixelColor.r = (info.N.x + 1.0f) * 128;
-				pixelColor.g = (info.N.y + 1.0f) * 128;
-				pixelColor.b = (info.N.z + 1.0f) * 128;*/
-				pixelColor = toColor24(hitMat->Shade(r, info, lights));
+				if (showNormals) {
+					pixelColor.r = (info.N.x + 1.0f) * 128;
+					pixelColor.g = (info.N.y + 1.0f) * 128;
+					pixelColor.b = (info.N.z + 1.0f) * 128;
+				} else 
+					pixelColor = toColor24(hitMat->Shade(r, info, lights, 20));
 			}
 			img[x + y*width] = pixelColor; 
 			zBuffer[x + y*width] = info.z;

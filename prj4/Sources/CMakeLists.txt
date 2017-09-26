@@ -9,6 +9,7 @@ set(SRC
 	${cyCodeBase_SRC}
 	${lodepng_SRC}
 	${CMAKE_CURRENT_SOURCE_DIR}/materials.h
+	${CMAKE_CURRENT_SOURCE_DIR}/materials.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/lights.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lights.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/xmlload.cpp
@@ -21,12 +22,12 @@ set(SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
 	)
 
-set(prj3_SRC 
+set(prj4_SRC 
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 	${SRC}
 	PARENT_SCOPE)
 
-set(prj3_tests_SRC
+set(prj4_tests_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/catch_main.cpp
 	${SRC}
 	${catch_SRC}

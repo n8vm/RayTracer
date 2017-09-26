@@ -54,7 +54,7 @@ SCENARIO("Camera rays intersect spheres correctly", "[prj1]") {
 		WHEN("A ray aimed at a sphere is traced through the scene") {
 			Ray r = getCameraRay(500, 300, cri);
 			HitInfo info;
-			Trace(r, rootNode, info);
+			Trace(r, rootNode, info, false);
 			REQUIRE(info.node != nullptr);
 			REQUIRE(info.z - 8.88425922 < .00001);
 			REQUIRE(info.front == true);
@@ -62,7 +62,7 @@ SCENARIO("Camera rays intersect spheres correctly", "[prj1]") {
 		WHEN("A ray aimed away from a sphere is traced through the scene") {
 			Ray r = getCameraRay(799, 599, cri);
 			HitInfo info;
-			Trace(r, rootNode, info);
+			Trace(r, rootNode, info, false);
 			REQUIRE(info.node == nullptr);
 		}
 	}
@@ -77,7 +77,7 @@ SCENARIO("Surface normals are calculated correctly", "[prj2]") {
 
 				Ray r = getCameraRay(500, 66, cri);
 				HitInfo info;
-				Trace(r, rootNode, info);
+				Trace(r, rootNode, info, false);
 
 				THEN("The first surface normal should be calculated correctly") {
 					REQUIRE(comparePoint(info.N, cyPoint3f(0.587693572f, -0.762885153f, 0.269485682f)) == true);
@@ -85,7 +85,7 @@ SCENARIO("Surface normals are calculated correctly", "[prj2]") {
 
 				r = getCameraRay(517, 441, cri);
 				HitInfo info2;
-				Trace(r, rootNode, info2);
+				Trace(r, rootNode, info2, false);
 
 				THEN("The second surface normal should be calculated correctly") {
 					REQUIRE(comparePoint(info2.N, cyPoint3f(0.128222868f, -0.826791644f, 0.547699273f)) == true);

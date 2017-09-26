@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.9)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-project (prj3)
+project (prj4)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
@@ -47,14 +47,14 @@ file(
 add_definitions(-DSCENE_PATH="${CMAKE_SOURCE_DIR}/../Scenes/")
 
 # Main Target
-add_executable(prj3 "${prj3_SRC}")
-target_link_libraries(prj3 ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
-set_target_properties(prj3 PROPERTIES LINKER_LANGUAGE CXX)
+add_executable(prj4 "${prj4_SRC}")
+target_link_libraries(prj4 ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
+set_target_properties(prj4 PROPERTIES LINKER_LANGUAGE CXX)
 
 # Unit Test Target
-add_executable(prj3_tests "${prj3_tests_SRC}")
-target_link_libraries(prj3_tests ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
-set_target_properties(prj3_tests PROPERTIES LINKER_LANGUAGE CXX)
+add_executable(prj4_tests "${prj4_tests_SRC}")
+target_link_libraries(prj4_tests ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
+set_target_properties(prj4_tests PROPERTIES LINKER_LANGUAGE CXX)
 
 # For IDE folder hierarchy generation
 foreach(_source IN ITEMS ${SRC_LIST})

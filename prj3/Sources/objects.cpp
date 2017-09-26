@@ -1,6 +1,6 @@
 #include "objects.h"
 
-static float bias = .000;
+static float bias = .001;
 bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 {
 	// Ray in model space

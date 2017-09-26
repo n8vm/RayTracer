@@ -16,7 +16,7 @@ int LoadScene(const char *filename);
 void ShowViewport();
 
 int main() {
-	LoadScene(SCENE_PATH "BoxScene.xml");
+	LoadScene(SCENE_PATH "ReflectRefractTest.xml");
 	ShowViewport();
 	return 0;
 }

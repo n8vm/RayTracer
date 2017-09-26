@@ -1,6 +1,6 @@
 #include "objects.h"
 
-static float bias = .000;
+static float bias = .01;
 bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 {
 	// Ray in model space
@@ -26,6 +26,7 @@ bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 				hInfo.z = tmax;
 				hInfo.p = r.p + tmax * r.dir;
 				hInfo.N = hInfo.p;
+				hInfo.front = false;
 			}
 		}
 		if (hitSide != 1) {
@@ -33,6 +34,7 @@ bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 				hInfo.z = tmin;
 				hInfo.p = r.p + tmin * r.dir;
 				hInfo.N = hInfo.p;
+				hInfo.front = true;
 			}
 		}
 		return true;
