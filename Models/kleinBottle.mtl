@@ -1,12 +1,3 @@
-# Blender MTL File: 'Bottiglia di Klein.blend'
-# Material Count: 1
-
-newmtl Glass_CG001
-Ns 817.647059
-Ka 0.667361 0.667361 0.667361
-Kd 0.800000 0.800000 0.800000
-Ks 1.000000 1.000000 1.000000
-Ke 0.150000 0.150000 0.150000
-Ni 1.150694
-d 1.000000
-illum 7
+version https://git-lfs.github.com/spec/v1
+oid sha256:90e125091d43130f1a5829d6fd8a209d483036942ec86a1b8fe185c9808e116b
+size 252

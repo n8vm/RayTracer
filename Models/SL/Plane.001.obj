@@ -1,12 +1,3 @@
-# Blender v2.77 (sub 0) OBJ File: 'Still Scene.blend'
-# www.blender.org
-mtllib Plane.001.mtl
-o Plane.001_Plane.003
-v -6.860103 0.157713 -6.198131
-v -6.860103 0.157713 -1.847117
-v -6.860103 3.619697 -1.847117
-v -6.860103 3.619696 -6.198132
-vn 1.0000 0.0000 0.0000
-usemtl Material.002
-s off
-f 1//1 4//1 3//1 2//1
+version https://git-lfs.github.com/spec/v1
+oid sha256:f06da02354bd6586a2158724a1ad80bb7c273259dc0ec16fc006e1dc691157ae
+size 311
