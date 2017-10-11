@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\catch_main.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\tinystr.cpp">
+      <Filter>Sources\tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\tinyxml.cpp">
+      <Filter>Sources\tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\tinyxmlerror.cpp">
+      <Filter>Sources\tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\tinyxmlparser.cpp">
+      <Filter>Sources\tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\lodepng\lodepng.cpp">
+      <Filter>Sources\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\texture.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\materials.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\lights.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\xmlload.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\scene.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\objects.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\viewport.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\git\UofU\CS6620\prj7\Sources\render.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\tinystr.h">
+      <Filter>Sources\tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\tinyxml.h">
+      <Filter>Sources\tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\cyCore.h">
+      <Filter>Sources\cyCodeBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\cyMatrix.h">
+      <Filter>Sources\cyCodeBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\cyPoint.h">
+      <Filter>Sources\cyCodeBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\cyColor.h">
+      <Filter>Sources\cyCodeBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\cyTriMesh.h">
+      <Filter>Sources\cyCodeBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\cyBVH.h">
+      <Filter>Sources\cyCodeBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\lodepng\lodepng.h">
+      <Filter>Sources\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\texture.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\materials.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\lights.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\scene.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\objects.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\render.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\git\UofU\CS6620\prj7\Sources\Catch\catch.hpp">
+      <Filter>Sources\Catch</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\git\UofU\CS6620\prj7\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\git\UofU\CS6620\prj7\Sources\tinyxml\CMakeLists.txt">
+      <Filter>Sources\tinyxml</Filter>
+    </None>
+    <None Include="C:\git\UofU\CS6620\prj7\Sources\cyCodeBase\CMakeLists.txt">
+      <Filter>Sources\cyCodeBase</Filter>
+    </None>
+    <None Include="C:\git\UofU\CS6620\prj7\Sources\lodepng\CMakeLists.txt">
+      <Filter>Sources\lodepng</Filter>
+    </None>
+    <None Include="C:\git\UofU\CS6620\prj7\Sources\CMakeLists.txt">
+      <Filter>Sources</Filter>
+    </None>
+    <None Include="C:\git\UofU\CS6620\prj7\Sources\Catch\CMakeLists.txt">
+      <Filter>Sources\Catch</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{0EE42EA4-EC3F-3810-A319-0135A311281D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\lodepng">
+      <UniqueIdentifier>{4366F889-D7D0-3C84-81A6-5FD5F121FCE1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\tinyxml">
+      <UniqueIdentifier>{F031F89C-35F2-3B12-B1FB-9136A80A60DD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Catch">
+      <UniqueIdentifier>{6809BF87-3B2F-3C80-86E1-226476CC8A81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\cyCodeBase">
+      <UniqueIdentifier>{F8A1530C-3B86-324C-9233-85984AE0C200}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
