@@ -1,8 +1,8 @@
 #include "objects.h"
 
-static float bias = .001;
 bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 {
+	float bias = .001;
 	// Ray in model space
 	float a = (r.dir).Dot(r.dir);   // dir dot dir
 	float b = 2.f*(r.p.Dot(r.dir)); // 2 * ray point dot dir
@@ -43,6 +43,7 @@ bool Sphere::IntersectRay(const Ray &r, HitInfo &hInfo, int hitSide) const
 }
 
 bool Plane::IntersectRay(const Ray &ray, HitInfo &hInfo, int hitSide) const {
+	float bias = .000001;
 	// If dz is zero, no intersection
 	//if (fabs(dz) <= .0001) return false;
 
@@ -64,12 +65,10 @@ bool Plane::IntersectRay(const Ray &ray, HitInfo &hInfo, int hitSide) const {
 	
 	/* Check depth */
 	if (hInfo.z > t && t > bias) {
-
 		hInfo.N = cyPoint3f(0, 0, 1.0f);
 		hInfo.p = intersection;
 		hInfo.z = t;
-		hInfo.front = (Pz > 0); // correct
-
+		hInfo.front = (Pz > 0);
 		return true;
 	}
 
@@ -88,6 +87,7 @@ bool TriObj::IntersectRay(const Ray &ray, HitInfo &hInfo, int hitSide) const {
 
 // Using Moller Trumbore Triangle Ray Intersection
 bool TriObj::IntersectTriangle(const Ray &ray, HitInfo &hInfo, int hitSide, unsigned int faceID) const {
+	float bias = .000008;
 	// Rearranged barycentric ray triangle intersection
 	//                           [t] 
 	// O -V0 = [-D, V1-V0, V2-V0][u] 
@@ -122,11 +122,11 @@ bool TriObj::IntersectTriangle(const Ray &ray, HitInfo &hInfo, int hitSide, unsi
 	const float det = edge1 % pvec;
 
 	// If the determinant is negative, the triangle is backfacing. 
-	if ((hitSide == HIT_FRONT) && (det < 0.f)) return false;
-	if ((hitSide == HIT_BACK) && (det > 0.f)) return false;
+	if ((hitSide == HIT_FRONT) && (det < 0)) return false;
+	if ((hitSide == HIT_BACK) && (det > 0)) return false;
 
 	// If the determinant is close to 0, the ray misses the triangle.
-	if (fabs(det) < .00001) return false;
+	//if (fabs(det) < .0001) return false;
 
 	// test U parameter 
 	cyPoint3f tVec = ray.p - v0;
@@ -146,10 +146,10 @@ bool TriObj::IntersectTriangle(const Ray &ray, HitInfo &hInfo, int hitSide, unsi
 
 	if (hInfo.z > t && t > bias) {
 		cyPoint3f bc = cyPoint3f(1.0 - (u + v), u, v);
-		hInfo.N = GetNormal(faceID, bc);
+		hInfo.N = GetNormal(faceID, bc).GetNormalized();
 		hInfo.p = ray.p + t * ray.dir;
 		hInfo.z = t;
-		hInfo.front = (det > 0.f); // correct
+		hInfo.front = (det > 0.f);
 		return true;
 	}
 	

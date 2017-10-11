@@ -79,7 +79,7 @@ void render_internal() {
 				pixelColor.b = (info.N.z + 1.0f) * 128;
 			}
 			else
-				pixelColor = Color24(hitMat->Shade(r, info, lights, 20));
+				pixelColor = Color24(hitMat->Shade(r, info, lights, 10));
 		}
 		img[x + y*width] = pixelColor;
 		zBuffer[x + y*width] = info.z;
@@ -138,7 +138,7 @@ void Trace_internal(Ray r, Node &n, HitInfo &info, int hitSide) {
 	/* If this node has an obj */
 	if (n.GetNodeObj()) {
 		Box bb = n.GetNodeObj()->GetBoundBox();
-		if (bb.IntersectRay(r2, BIGFLOAT)) {
+		if (bb.IntersectRay(r2, info.z)) {
 			float oldZ = info.z;
 			n.GetNodeObj()->IntersectRay(r2, info, hitSide);
 			/* If the z value decreased, this node is the closest node that the ray hit */

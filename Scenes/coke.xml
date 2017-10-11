@@ -34,7 +34,7 @@
         <scale value="0.012"/>
         <rotate angle="-20" z="1"/>
         <translate x="-8" y="-8" z="0"/>
-        <translate x="0" y="0" z="5.2"/>
+        <translate x="0" y="0" z="5."/>
       </object>
     </object>
 
@@ -138,30 +138,24 @@
       <specular r="1.0" g="1.0" b="1.0" value="0.7"/>
       <glossiness value="20"/>
       <reflection value="0.7"/>
-      <!-- <refraction value="0.8" index="1.5"/> -->
-      <!-- <reflection value="0.2"/> -->
-      <!-- <absorption r="0.01" g="0.001" b="0.001"/> -->
     </material>
 
     <material type="blinn" name="box1">
       <diffuse  r="1" g="1" b="1"/>
       <specular r="1.0" g="1.0" b="1.0" value="0.7"/>
       <glossiness value="20"/>
-      <!-- <reflection value="0.1"/> -->
     </material>
 
     <material type="blinn" name="box2">
       <diffuse  r="1.0" g="0.5" b="0.5"/>
       <specular r="1.0" g="1.0" b="1.0" value="0.7"/>
       <glossiness value="20"/>
-      <!-- <reflection value="0.1"/> -->
     </material>
 
     <material type="blinn" name="box3">
       <diffuse  r="0.5" g="0.5" b="1.0"/>
       <specular r="1.0" g="1.0" b="1.0" value="0.7"/>
       <glossiness value="20"/>
-      <!-- <reflection value="0.1"/> -->
     </material>
 
     <material type="blinn" name="mtl2">

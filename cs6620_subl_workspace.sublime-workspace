@@ -35,6 +35,33 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "Scenes/suzanne.xml",
+			"settings":
+			{
+				"buffer_size": 3400,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Scenes/klein.xml",
+			"settings":
+			{
+				"buffer_size": 3417,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Scenes/coke.xml",
+			"settings":
+			{
+				"buffer_size": 5568,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -73,10 +100,27 @@
 	},
 	"expanded_folders":
 	[
-		"/C/git/UofU/CS6620"
+		"/C/git/UofU/CS6620",
+		"/C/git/UofU/CS6620/Scenes"
 	],
 	"file_history":
 	[
+		"/C/git/UofU/CS6620/prj5/Sources/objects.h",
+		"/C/git/UofU/CS6620/prj5/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj5/Sources/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj5/Sources/scene.h",
+		"/C/git/UofU/CS6620/prj5/Sources/xmlload.cpp",
+		"/C/git/UofU/CS6620/prj5/Sources/cyCodeBase/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj5/Sources/viewport.cpp",
+		"/C/git/UofU/CS6620/Scenes/cornellWObj.xml",
+		"/C/git/UofU/CS6620/Scenes/luxo.xml",
+		"/C/git/UofU/CS6620/Scenes/ray_intersects_plane.xml",
+		"/C/git/UofU/CS6620/Scenes/ray_intersects_triangle.xml",
+		"/C/Users/Nate/AppData/Local/Temp/scp45914/home/natevm/public_html/courses/cs6620/prj5.html",
+		"/C/git/UofU/CS6620/prj5/Sources/scene.cpp",
+		"/C/git/UofU/CS6620/Scenes/coke.xml",
+		"/C/git/UofU/CS6620/.gitignore",
+		"/C/Users/Nate/AppData/Local/Temp/scp31013/home/natevm/public_html/courses/cs6620/prj5.html",
 		"/C/Users/Nate/AppData/Local/Temp/scp01641/home/natevm/public_html/courses/cs6630/hw3/script.js",
 		"/C/Users/Nate/AppData/Local/Temp/scp15611/home/natevm/public_html/courses/cs6630/hw4/styles.css",
 		"/C/Users/Nate/AppData/Local/Temp/scp23445/home/natevm/public_html/courses/cs6630/hw4/hw4.html",
@@ -102,7 +146,7 @@
 	],
 	"find":
 	{
-		"height": 63.0
+		"height": 49.0
 	},
 	"find_in_files":
 	{
@@ -116,6 +160,12 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"prj4",
+			"obj",
+			"_low",
+			"<scale value=\".2\"/>",
+			"Models/",
+			"prj4",
 			"transition",
 			"clearMap",
 			"drawmap",
@@ -168,18 +218,109 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "Scenes/suzanne.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3400,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								3400
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1663.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Scenes/klein.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3417,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1016,
+								1016
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "Scenes/coke.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5568,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 6946.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 51.0
+		"height": 49.0
 	},
 	"input":
 	{
-		"height": 0.0
+		"height": 63.0
 	},
 	"layout":
 	{
@@ -212,7 +353,7 @@
 	"project": "",
 	"replace":
 	{
-		"height": 98.0
+		"height": 94.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -250,7 +391,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 556.0,
+	"side_bar_width": 50.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

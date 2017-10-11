@@ -18,7 +18,7 @@ int LoadScene(const char *filename);
 void ShowViewport();
 
 int main() {
-	LoadScene(SCENE_PATH "coke.xml");
+	LoadScene(SCENE_PATH "suzanne.xml");
 	ShowViewport();
 	return 0;
 }
