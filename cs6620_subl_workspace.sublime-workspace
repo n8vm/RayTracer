@@ -4,6 +4,42 @@
 		"selected_items":
 		[
 			[
+				"ch",
+				"checkerMtl"
+			],
+			[
+				"colla",
+				"collapseList"
+			],
+			[
+				"aggre",
+				"aggregate"
+			],
+			[
+				"ag",
+				"aggregate"
+			],
+			[
+				"tabl",
+				"tableElements"
+			],
+			[
+				"te",
+				"tableElements"
+			],
+			[
+				"next",
+				"nextRow"
+			],
+			[
+				"selec",
+				"selectAll"
+			],
+			[
+				"entr",
+				"entry"
+			],
+			[
 				"worl",
 				"worldcupData"
 			],
@@ -24,10 +60,6 @@
 				"xScaleXOffset"
 			],
 			[
-				"selec",
-				"selectedDimension"
-			],
-			[
 				"update",
 				"updateBarChart"
 			]
@@ -36,29 +68,28 @@
 	"buffers":
 	[
 		{
-			"file": "Scenes/suzanne.xml",
+			"file": "Scenes/stillLife.xml",
 			"settings":
 			{
-				"buffer_size": 3400,
+				"buffer_size": 3380,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "Scenes/klein.xml",
+			"file": "Scenes/DepthOfField.xml",
 			"settings":
 			{
-				"buffer_size": 3417,
+				"buffer_size": 3046,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "Scenes/coke.xml",
+			"file": "Scenes/ray_intersects_triangle.xml",
 			"settings":
 			{
-				"buffer_size": 5568,
-				"encoding": "UTF-8",
+				"buffer_size": 1912,
 				"line_ending": "Windows"
 			}
 		}
@@ -101,10 +132,52 @@
 	"expanded_folders":
 	[
 		"/C/git/UofU/CS6620",
+		"/C/git/UofU/CS6620/prj9/Sources",
 		"/C/git/UofU/CS6620/Scenes"
 	],
 	"file_history":
 	[
+		"/C/Users/Nate/AppData/Local/Temp/scp24850/home/natevm/public_html/courses/cs6620/prj9.html",
+		"/C/git/UofU/CS6620/Scenes/texture_test.xml",
+		"/C/Users/Nate/AppData/Local/Temp/scp36383/home/natevm/public_html/courses/cs6630/hw5/hw5.html",
+		"/C/Users/Nate/AppData/Local/Temp/scp36336/home/natevm/public_html/courses/cs6630/hw5/js/tree.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp36499/home/natevm/public_html/courses/cs6630/hw5/js/table.js",
+		"/C/git/UofU/CS6620/prj9/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj9/Sources/CMakeLists.txt",
+		"/C/git/UofU/CS6620/Scenes/DepthOfField.xml",
+		"/C/git/UofU/CS6620/prj9/Sources/options.h",
+		"/C/git/UofU/CS6620/prj8/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj8/Sources/CMakeLists.txt",
+		"/C/Users/Nate/AppData/Local/Temp/scp38896/home/natevm/public_html/courses/cs6630/hw4/js/map.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp20201/home/natevm/public_html/courses/cs6630/hw5/data/fifa-matches.json",
+		"/C/Users/Nate/AppData/Local/Temp/scp39666/home/natevm/public_html/courses/cs6630/hw5/styles.css",
+		"/C/Users/Nate/AppData/Local/Temp/scp36768/home/natevm/public_html/courses/cs6630/hw5/js/script.js",
+		"/C/git/UofU/CS6620/Scenes/texture_test_2.xml",
+		"/C/git/UofU/CS6620/Scenes/cornellWObj.xml",
+		"/C/Users/Nate/AppData/Local/Temp/scp24663/home/natevm/public_html/courses/cs6620/prj8.html",
+		"/C/Users/Nate/AppData/Local/Temp/scp55708/home/natevm/public_html/courses/cs6630/hw2/js/Tree.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp55950/home/natevm/public_html/courses/cs6630/hw3/script.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp32081/home/natevm/public_html/courses/cs6630/hw4/js/barChart.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp20534/home/natevm/public_html/courses/cs6630/hw4/styles.css",
+		"/C/Users/Nate/AppData/Local/Temp/scp38475/home/natevm/public_html/courses/cs6630/hw4/js/infoPanel.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp17098/home/natevm/public_html/courses/cs6630/hw5/js/tree.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp09601/home/natevm/public_html/courses/cs6630/hw5/hw5.html",
+		"/C/Users/Nate/AppData/Local/Temp/scp17046/home/natevm/public_html/courses/cs6630/hw5/js/table.js",
+		"/C/Users/Nate/AppData/Local/Temp/scp43124/home/natevm/public_html/courses/cs6630/hw5/styles.css",
+		"/C/Users/Nate/AppData/Local/Temp/scp17237/home/natevm/public_html/courses/cs6630/hw5/js/script.js",
+		"/F/inject.bin",
+		"/C/git/UofU/CS6620/prj7/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj7/Sources/CMakeLists.txt",
+		"/C/git/UofU/CS6620/prj7/Sources/viewport.cpp",
+		"/C/git/UofU/CS6620/prj7/Sources/scene.h",
+		"/C/git/UofU/CS6620/prj7/Sources/materials.h",
+		"/C/git/UofU/CS6620/prj7/Sources/objects.h",
+		"/C/git/UofU/CS6620/prj7/Sources/xmlload.cpp",
+		"/C/git/UofU/CS6620/prj7/Sources/texture.h",
+		"/C/git/UofU/CS6620/prj7/Sources/texture.cpp",
+		"/C/git/UofU/CS6620/Scenes/coke.xml",
+		"/C/git/UofU/CS6620/Scenes/klein.xml",
+		"/C/git/UofU/CS6620/Scenes/suzanne.xml",
 		"/C/git/UofU/CS6620/prj5/Sources/objects.h",
 		"/C/git/UofU/CS6620/prj5/CMakeLists.txt",
 		"/C/git/UofU/CS6620/prj5/Sources/CMakeLists.txt",
@@ -112,13 +185,11 @@
 		"/C/git/UofU/CS6620/prj5/Sources/xmlload.cpp",
 		"/C/git/UofU/CS6620/prj5/Sources/cyCodeBase/CMakeLists.txt",
 		"/C/git/UofU/CS6620/prj5/Sources/viewport.cpp",
-		"/C/git/UofU/CS6620/Scenes/cornellWObj.xml",
 		"/C/git/UofU/CS6620/Scenes/luxo.xml",
 		"/C/git/UofU/CS6620/Scenes/ray_intersects_plane.xml",
 		"/C/git/UofU/CS6620/Scenes/ray_intersects_triangle.xml",
 		"/C/Users/Nate/AppData/Local/Temp/scp45914/home/natevm/public_html/courses/cs6620/prj5.html",
 		"/C/git/UofU/CS6620/prj5/Sources/scene.cpp",
-		"/C/git/UofU/CS6620/Scenes/coke.xml",
 		"/C/git/UofU/CS6620/.gitignore",
 		"/C/Users/Nate/AppData/Local/Temp/scp31013/home/natevm/public_html/courses/cs6620/prj5.html",
 		"/C/Users/Nate/AppData/Local/Temp/scp01641/home/natevm/public_html/courses/cs6630/hw3/script.js",
@@ -157,9 +228,35 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"ground",
+			"translate",
+			"prj8",
+			"prj7",
+			"selection",
+			"tree",
+			"treeData",
+			"resultsAssending",
+			"lossesAssending",
+			"Losses",
+			"Wins",
+			"winsAssending",
+			"resultsAssending",
+			"Group",
+			"teamData",
+			"GUI",
+			"teamData",
+			"csvData",
+			"subList",
+			"’",
+			"‘",
+			"”",
+			"“",
+			" min",
+			"\"cy",
+			"prj6",
 			"prj4",
 			"obj",
 			"_low",
@@ -199,9 +296,10 @@
 		"highlight": true,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": false,
+		"regex": true,
 		"replace_history":
 		[
+			" MIN"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -213,29 +311,32 @@
 	[
 		{
 			"path": "C:\\git\\UofU\\CS6620"
+		},
+		{
+			"path": "C:\\Users\\Nate\\Downloads\\ExperimentCode"
 		}
 	],
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "Scenes/suzanne.xml",
+					"file": "Scenes/stillLife.xml",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3400,
+						"buffer_size": 3380,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								3400
+								3358,
+								3358
 							]
 						],
 						"settings":
@@ -245,49 +346,49 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1663.0,
+						"translation.y": 3931.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Scenes/DepthOfField.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3046,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2973,
+								2973
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 718.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "Scenes/klein.xml",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3417,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1016,
-								1016
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/XML/XML.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
 					"buffer": 2,
-					"file": "Scenes/coke.xml",
+					"file": "Scenes/ray_intersects_triangle.xml",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5568,
+						"buffer_size": 1912,
 						"regions":
 						{
 						},
@@ -305,10 +406,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6946.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
@@ -367,12 +468,16 @@
 	},
 	"select_project":
 	{
-		"height": 0.0,
+		"height": 500.0,
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"",
+				"C:\\git\\UofU\\SBVR\\sublPrj.sublime-project"
+			]
 		],
-		"width": 0.0
+		"width": 380.0
 	},
 	"select_symbol":
 	{
@@ -391,7 +496,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 50.0,
+	"side_bar_width": 333.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

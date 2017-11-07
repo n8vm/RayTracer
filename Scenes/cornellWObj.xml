@@ -89,8 +89,8 @@
     <position x="0" y="-60" z="12"/>
     <target x="0" y="0" z="12"/>
     <up x="0" y="0" z="1"/>
-    <fov value="30"/>
-    <width value="1600"/>
-    <height value="1200"/>
+    <fov value="35"/>
+    <width value="800"/>
+    <height value="800"/>
   </camera>
 </xml>

@@ -1,0 +1,11 @@
+# Blender v2.77 (sub 0) OBJ File: 'Still Scene.blend'
+# www.blender.org
+mtllib Light1.mtl
+o Light1_Plane.003
+v -6.860103 0.157713 -6.198131
+v -6.860103 0.157713 -1.847117
+v -6.860103 3.619697 -1.847117
+v -6.860103 3.619696 -6.198132
+usemtl Material.002
+s off
+f 1 4 3 2
