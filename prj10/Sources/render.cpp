@@ -68,7 +68,7 @@ void render_internal() {
 		
 		float meanZ = 0;
 		Color mean = Color::Black(), m2 = Color::Black();
-		uchar totalSamples = MIN_SAMPLES;
+		unsigned int totalSamples = MIN_SAMPLES;
 
 		/* Use Halton Sequence for antialiasing. */
 		for (int i = 1; i <= totalSamples; i++) {
@@ -133,7 +133,7 @@ void render_internal() {
 
 		img[x + y*width] = Color24(mean);
 		zBuffer[x + y*width] = meanZ;
-		sampleBuffer[x + y*width] = totalSamples;
+		sampleBuffer[x + y*width] = ((totalSamples - MIN_SAMPLES) / (float)(MAX_SAMPLES - MIN_SAMPLES)) * 256;
 
 		renderImage.IncrementNumRenderPixel(1);
 	}
