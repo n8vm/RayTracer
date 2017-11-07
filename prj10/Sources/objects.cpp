@@ -102,7 +102,9 @@ bool Plane::IntersectRay(const Rays &rays, HitInfo &hInfo, int hitSide) const {
 	/* Check depth */
 	if (hInfo.z > t && t > PLANE_BIAS) {
 		hInfo.z = t;
-		if (hInfo.shadow) return true;
+		if (hInfo.shadow) {
+			return true;
+		}
 		hInfo.N = cyPoint3f(0, 0, 1.0f);
 		hInfo.p = intersection;
 		hInfo.front = (Pz > 0);

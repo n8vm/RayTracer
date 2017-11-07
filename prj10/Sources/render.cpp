@@ -192,7 +192,7 @@ void Trace_internal(Rays rays, Node &n, HitInfo &info, int hitSide, float t_max)
 	/* If this node has an obj */
 	if (n.GetNodeObj()) {
 		Box bb = n.GetNodeObj()->GetBoundBox();
-		if (bb.IntersectRay(newRays.mainRay, MAX(info.z, BIGFLOAT))) {
+		if (bb.IntersectRay(newRays.mainRay, MAX(info.z, t_max))) {
 			float oldZ = info.z;
 			n.GetNodeObj()->IntersectRay(newRays, info, hitSide);
 			/* If the z value decreased, this node is the closest node that the ray hit */
@@ -207,10 +207,10 @@ void Trace_internal(Rays rays, Node &n, HitInfo &info, int hitSide, float t_max)
 
 	/* Recurse through the children */
 	const Box &bb = n.GetChildBoundBox();
-	if (bb.IntersectRay(rays.mainRay, MAX(info.z, BIGFLOAT))) {
+	if (bb.IntersectRay(rays.mainRay, MAX(info.z, t_max))) {
 		for (int i = 0; i < n.GetNumChild(); ++i) {
 			const Node *previous = info.node;
-			Trace_internal(newRays, *n.GetChild(i), info, hitSide, MAX(info.z, BIGFLOAT));
+			Trace_internal(newRays, *n.GetChild(i), info, hitSide, MAX(info.z, t_max));
 
 			/* If this is a shadow trace and we hit something, return. */
 			if (info.shadow && info.z != BIGFLOAT) 

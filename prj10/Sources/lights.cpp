@@ -10,9 +10,9 @@ float GenLight::Shadow(Rays rays, float t_max) {
 	if (DISABLE_SHADOWS) return 1;
 	HitInfo hInfo = HitInfo();
 	hInfo.shadow = EARLY_SHADOW_TERMINATION;
-	Trace(rays, rootNode, hInfo, HIT_FRONT_AND_BACK);
+	Trace(rays, rootNode, hInfo, HIT_FRONT_AND_BACK, t_max);
 
-	if ((hInfo.node != nullptr) && hInfo.z <= t_max && hInfo.z > rays.mainRay.p.z) {
+	if ((hInfo.node != nullptr) && hInfo.z <= t_max) {
 		return 0.;
 	}
 	return 1;
@@ -58,6 +58,6 @@ Color PointLight::Illuminate(const Point3 &p, const Point3 &N) const {
 		return (shadowSum / (float)totalSamples) * intensity;
 	}
 	else {
-		return Shadow({ initialRay, Ray(), Ray() }) *intensity;
+		return Shadow({ initialRay, Ray(), Ray() }, 1) *intensity;
 	}
 }
