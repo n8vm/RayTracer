@@ -93,6 +93,7 @@
     <light type="point" name="pointLight">
       <intensity value="0.4"/>
       <position x="-1.1912" y="1.35329" z="4.4"/>
+      <size value="10"/>
     </light>
 
     <!-- <light type="direct" name="directLight">
