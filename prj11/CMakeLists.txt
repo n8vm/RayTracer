@@ -31,6 +31,9 @@ FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
 include_directories(${GLUT_INCLUDE_DIR})
 
+MESSAGE(WARN ${GLUT_INCLUDE_DIR})
+MESSAGE(WARN "${GLUT_LIBRARY_DEBUG}")
+
 # For IDE folder hierarchy generation
 set(SRC_PATH "Sources")
 file(
@@ -51,7 +54,7 @@ add_definitions(-DMODEL_PATH="${CMAKE_SOURCE_DIR}/../Models/")
 add_definitions(-DTEXTURE_PATH="${CMAKE_SOURCE_DIR}/../Textures/")
 
 # Main Target
-add_executable(prj11 "${prj11_SRC}")
+add_executable(prj11 "${prj11_SRC}" "${GLUT_INCLUDE_DIR}")
 target_link_libraries(prj11 ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
 set_target_properties(prj11 PROPERTIES LINKER_LANGUAGE CXX)
 

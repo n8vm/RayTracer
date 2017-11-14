@@ -77,17 +77,17 @@
  
     <material type="blinn" name="glossy4">
       <diffuse r="0" g="0" b=".2"/>
-      <absorption r="0.1" g="0.1" b="0.00001"/>
+      <absorption r="0.1" g="0.1 b="0.00001"/>
 
       <specular value="0.8"/>
       <!-- <glossiness value="50"/> -->
-      <refraction index="1.52" value="0.8"/>
+      <refraction index="2.0" value="0.8" glossiness="0.05"/>
     </material>
 
     <material type="blinn" name="glossy3">
       <specular value="0.8"/>
       
-      <refraction index="1.52" value="0.8" glossiness="0.05"/>
+      <refraction index="2.0" value="0.8" glossiness="0.05"/>
     </material>
     
     <!-- Lights -->
@@ -105,7 +105,7 @@
     <target x="0" y="0" z="11"/>
     <up x="0" y="0" z="1"/>
     <fov value="30"/>
-    <width value="1440"/>
-    <height value="1080"/>
+    <width value="144"/>
+    <height value="108"/>
   </camera>
 </xml>
