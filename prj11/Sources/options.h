@@ -23,7 +23,7 @@
 #define MIN_SHADOW_SAMPLES 64
 #define TOTAL_THREADS 8
 
-#define INDIRECT_SAMPLES 20
+#define INDIRECT_SAMPLES 1
 
 #define GAMMA 1.8
 

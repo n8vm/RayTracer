@@ -136,6 +136,7 @@ void render_internal() {
 		sampleBuffer[x + y*width] = ((totalSamples - MIN_SAMPLES) / (float)(MAX_SAMPLES - MIN_SAMPLES)) * 256;
 
 		renderImage.IncrementNumRenderPixel(1);
+		//std::cout << pixelsDone <<" out of "  << width * height <<  " done. " << std::endl;
 	}
 
 }
@@ -199,7 +200,7 @@ void Trace_internal(Rays rays, Node &n, HitInfo &info, int hitSide, float t_max)
 			if (info.z < oldZ) {
 				info.node = &n;
 				/* Shadow rays can quit tracing at this point. */
-				if (info.shadow) 
+				if (info.shadow && info.z < t_max) 
 					return;
 			}
 		}
@@ -213,7 +214,7 @@ void Trace_internal(Rays rays, Node &n, HitInfo &info, int hitSide, float t_max)
 			Trace_internal(newRays, *n.GetChild(i), info, hitSide, MAX(info.z, t_max));
 
 			/* If this is a shadow trace and we hit something, return. */
-			if (info.shadow && info.z != BIGFLOAT) 
+			if (info.shadow && info.z <= t_max) 
 				return;
 
 			//bb.IntersectRay(r2, BIGFLOAT);

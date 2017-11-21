@@ -327,15 +327,15 @@ Color MtlBlinn::ShadeIndirect(const Rays &rays, const HitInfo &hInfo, const Ligh
 			float dot = (hInfo.N.GetNormalized() % ldir);
 
 			/* If surface is facing the light */
-			//if (dot >= 0) {
+			if (dot >= 0) {
 				//cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
-			indirectCol += intensity/* dot **/* (diffuse.Sample(hInfo.uvw, hInfo.duvw));// +(specular.Sample(hInfo.uvw, hInfo.duvw) * pow(hInfo.N % H, glossiness)));
-			//}
+				indirectCol += intensity * dot * (diffuse.Sample(hInfo.uvw, hInfo.duvw));// +(specular.Sample(hInfo.uvw, hInfo.duvw) * pow(hInfo.N % H, glossiness)));
+			}
 
 		}
 	}
 
-	indirectCol /= (float)samples;
+	//indirectCol /= (float)samples;
 #endif
 
 	return indirectCol;

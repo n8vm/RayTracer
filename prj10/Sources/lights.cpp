@@ -36,10 +36,10 @@ Color PointLight::Illuminate(const Point3 &p, const Point3 &N) const {
 		float shadowSum = 0;
 		for (int i = 0; i < totalSamples; ++i) {
 			float t = 2 * M_PI*Halton(i + random, 2);
-			float u = Halton(i + random, 3) + Halton(i + random, 3);
+			float u = Halton(i + random, 3) + Halton(i + random, 5);
 			float r = (u > 1.0) ? 2 - u : u;
-			float dpx = r*cos(t) * size * 2.0;
-			float dpy = r*sin(t) * size * 2.0;
+			float dpx = r*cos(t) * size * 1.0;
+			float dpy = r*sin(t) * size * 1.0;
 		
 
 			cyPoint4f point = cyPoint4f(dpx, dpy, 0, 1);

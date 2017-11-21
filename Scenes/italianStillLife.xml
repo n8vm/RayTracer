@@ -1,0 +1,249 @@
+<xml>
+  <scene>
+    <!-- <environment r=".07" g=".09" b=".1"/> -->
+    <!-- <environment r=".01" g=".01" b=".01"/> -->
+    <!-- <environment r=".7" g=".9" b="1.0"/> -->
+    <!-- <environment value="0.3" texture="clouds.png"/> -->
+
+
+    <!-- Objects -->
+    <object name="backdrop">
+      <object type="obj" name="ISL/Plane.002.obj" material="backdrop"/>
+    </object>
+
+    <object name="floor">
+      <object type="obj" name="ISL/Plane.001.obj" material="floor"/>
+    </object>
+
+    <object name="leftJug">
+      <object type="obj" name="ISL/chain.001.obj" material="copper"/>
+      <object type="obj" name="ISL/Circle.003.obj" material="glass"/>
+      <object type="obj" name="ISL/Cylinder.008.obj" material="hybwood3"/>
+      <object type="obj" name="ISL/Cylinder.009.obj" material="glass"/>
+      <object type="obj" name="ISL/Circle.002.obj" material="balsamic"/>
+      <object type="obj" name="ISL/Torus.000.obj" material="copper"/>
+    </object>
+
+    <object name="rightJug">
+      <object type="obj" name="ISL/chain.obj" material="copper"/>
+      <object type="obj" name="ISL/Circle.obj" material="glass"/>
+      <object type="obj" name="ISL/Cylinder.001.obj" material="hybwood3"/>
+      <object type="obj" name="ISL/Cylinder.obj" material="glass"/>
+      <object type="obj" name="ISL/Circle.001.obj" material="oil"/>
+      <object type="obj" name="ISL/Torus.001.obj" material="copper"/>
+    </object>
+
+    <object name="mortarAndPestle">
+      <object type="obj" name="ISL/Cylinder.002.obj" material="hybwood3"/>
+      <object type="obj" name="ISL/Cylinder.003.obj" material="hybwood3"/>
+    </object>
+
+    <object name="garlic">
+      <object type="obj" name="ISL/Sphere.002.obj" material="garlic"/>
+      <object type="obj" name="ISL/Sphere.001.obj" material="garlic"/>
+      <object type="obj" name="ISL/Sphere.obj" material="garlic"/>
+    </object>
+
+    <object name="frontPlants">
+      <object type="obj" name="ISL/FrontPlants/Cylinder.004.obj" material="rosemary"/>
+      <object type="obj" name="ISL/FrontPlants/Cylinder.005.obj" material="rosemary"/>
+      <object type="obj" name="ISL/FrontPlants/Cylinder.006.obj" material="rosemary"/>
+      <object type="obj" name="ISL/FrontPlants/Cylinder.007.obj" material="rosemary"/>
+      <object type="obj" name="ISL/FrontPlants/Cylinder.010.obj" material="rosemary"/>
+      <object type="obj" name="ISL/FrontPlants/Cylinder.011.obj" material="rosemary"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.003.obj" material="leaf"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.004.obj" material="leaf"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.005.obj" material="leaf"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.006.obj" material="leaf"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.007.obj" material="leaf"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.008.obj" material="leaf"/>
+      <object type="obj" name="ISL/FrontPlants/Plane.011.obj" material="leaf"/>
+    </object>
+
+    <object name="backLeftPlants">
+      <object type="obj" name="ISL/BackLeftPlants/Plane.013.obj" material="leaf"/>
+      <object type="obj" name="ISL/BackLeftPlants/Plane.014.obj" material="leaf"/>
+      <object type="obj" name="ISL/BackLeftPlants/Plane.015.obj" material="leaf"/>
+    </object>
+
+    <object name="backRightPlants">
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.012.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.016.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.017.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.018.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.019.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.020.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.021.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.022.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.023.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.024.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.025.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.026.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.027.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.040.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.041.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.042.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.043.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.044.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.045.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.046.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.047.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.048.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.049.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.050.obj" material="rosemary"/>
+      <object type="obj" name="ISL/BackRightPlants/Cylinder.051.obj" material="rosemary"/>
+    </object>
+
+
+    <object name="frontPebbles">
+      <object type="obj" name="ISL/FrontPebbles/Sphere.003.obj" material="grey"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.004.obj" material="copper"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.005.obj" material="brown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.006.obj" material="lightBrown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.007.obj" material="yellow"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.008.obj" material="grey"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.009.obj" material="copper"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.010.obj" material="brown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.011.obj" material="lightBrown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.012.obj" material="yellow"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.013.obj" material="grey"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.014.obj" material="copper"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.015.obj" material="brown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.016.obj" material="lightBrown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.017.obj" material="yellow"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.018.obj" material="grey"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.019.obj" material="copper"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.020.obj" material="brown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.021.obj" material="lightBrown"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.022.obj" material="yellow"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.023.obj" material="grey"/>
+      <object type="obj" name="ISL/FrontPebbles/Sphere.024.obj" material="copper"/>
+    </object>
+
+
+    <!-- Materials -->
+    <material type="blinn" name="backdrop">
+      <diffuse texture="ISL/Grunge_v_by_struckdumbalt.png"/>
+      <specular value="0.3"/>
+    </material>
+
+    <material type="blinn" name="floor">
+      <diffuse texture="ISL/webtreats_light_wood3altr.png"/>
+      <specular value="0.5"/>
+    </material>
+
+    <material type="blinn" name="garlic">
+      <diffuse texture="ISL/archivetextures.net.png"/>
+      <!-- <specular texture="ISL/archivetextures_SPEC.png"/> -->
+    </material>
+
+    <material type="blinn" name="hybwood3">
+      <diffuse texture="ISL/hybwood3.png">
+      </diffuse>
+      <specular value="0.3"/>
+      <!-- <glossiness value="10"/> -->
+    </material>
+
+    <material type="blinn" name="leaf">
+      <diffuse texture="ISL/lemonbalmlea3fpng.png"/>
+      <specular value="0.3"/>
+      <!-- <glossiness value="10"/> -->
+    </material>
+
+    <material type="blinn" name="rosemary">
+      <diffuse texture="ISL/rosemary leaf extpng.png"/>
+      <specular value="0.3"/>
+      <!-- <glossiness value="10"/> -->
+    </material>
+
+    <material type="blinn" name="glass">
+      <diffuse value="0"/>
+      <specular value="0.6"/>
+      <glossiness value="100"/>
+      <refraction index="1.45" r=".9" g=".9" b=".9"/>
+      <absorption r=".01" g=".001" b=".0001"/>
+    </material>
+
+    <material type="blinn" name="oil">
+      <diffuse value="0"/>
+      <specular value="0.2"/>
+      <!-- <glossiness value="100"/> -->
+      <refraction index="1.518" value="1"/>
+      <absorption r=".043" g=".18" b=".957"/>
+    </material>
+
+    <material type="blinn" name="balsamic">
+      <diffuse value="0"/>
+      <specular value="0.2"/>
+      <!-- <glossiness value="100"/> -->
+      <refraction index="1.45" r=".9" g=".9" b=".9"/>
+      <absorption r=".809" g=".86" b=".75"/>
+    </material>
+
+        <material type="blinn" name="grey">
+      <diffuse  r="0.5" g="0.5" b="0.5"/>
+    </material>
+
+    <material type="blinn" name="copper">
+      <diffuse  r="0.8" g="0.255" b="0.0"/>
+    </material>
+
+    <material type="blinn" name="brown">
+      <diffuse  r="0.058" g="0.019" b="0.016"/>
+    </material>
+
+    <material type="blinn" name="lightBrown">
+      <diffuse  r=".27" g="0.17" b="0.06"/>
+    </material>
+
+    <material type="blinn" name="yellow">
+      <diffuse  r="1.0" g="0.8" b="0.2"/>
+    </material>
+
+    <!-- Lights -->
+<!--     <light type="ambient" name="ambientLight">
+      <intensity value=".0"/>
+    </light> -->
+
+    <light type="point" name="p1">
+      <intensity r=".8" g=".742" b=".655"/>
+      <intensity r="128." g="118" b="117.9"/>
+      <intensity r="256." g="236" b="234.9"/>
+      <intensity r="512." g="472" b="468.9"/>
+      <position x="-19.54208" y="12.48949" z="12.80699"/>
+            <size value="5"/>
+
+    </light>
+
+    <light type="point" name="p2">
+      <intensity r=".722" g=".8" b=".799"/>
+      <intensity r="115" g="128" b="127"/>
+      <intensity r="230" g="256" b="254"/>
+      <intensity r="460" g="512" b="508"/>
+      <position x="-17.93445" y="-3.87978" z="15.22726"/>
+            <size value="5"/>
+
+    </light>
+
+ <!--    <light type="point" name="p2">
+      <intensity r=".722" g=".8" b=".799"/>
+      <intensity r="115" g="128" b="127"/>
+      <intensity r="700" g="700" b="700"/>
+      <position x="2" y="10.30936" z="20.92"/>
+    </light> -->
+
+
+  </scene>
+ 
+<camera>
+    <position x="-2.32647" y="-20.55955" z="8.04287"/>
+    <target x="-1.3264700174331665" y="16.563186645507812" z="-1.00"/>
+    <up x=".0" y="0.08521834015846252" z="0.9963623881340027"/>
+    <fov value="30"/>
+    <width value="800"/>
+    <height value="600"/>
+
+    <focaldist value="20"/>
+    <dof value=".19"/>
+  </camera>
+</xml>
