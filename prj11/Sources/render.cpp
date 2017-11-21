@@ -132,9 +132,9 @@ void render_internal() {
 		}
 
 		Color24 correctedColor = Color24(mean);
-		correctedColor.r = 255 * pow((correctedColor.r / 255.0), (1.0 / GAMMA));
-		correctedColor.g = 255 * pow((correctedColor.g / 255.0), (1.0 / GAMMA));
-		correctedColor.b = 255 * pow((correctedColor.b / 255.0), (1.0 / GAMMA));
+		correctedColor.r = 255.0 * pow((correctedColor.r / 255.0), (1.0 / GAMMA));
+		correctedColor.g = 255.0 * pow((correctedColor.g / 255.0), (1.0 / GAMMA));
+		correctedColor.b = 255.0 * pow((correctedColor.b / 255.0), (1.0 / GAMMA));
 		imageBuffer[x + y*width] = correctedColor;
 
 		depthBuffer[x + y*width] = depth;
