@@ -23,7 +23,8 @@ public:
 		reflection(0, 0, 0), refraction(0, 0, 0), absorption(0, 0, 0), ior(1),
 		reflectionGlossiness(0), refractionGlossiness(0) {}
 	
-	virtual Color Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const;
+	virtual bool isTransparent(const HitInfo &hInfo) const;
+	virtual Color Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, bool use_indirect) const;
 	virtual Color ShadeReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &khr, Color absorpted) const;
 	virtual Color ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &khr, Color absorpted) const;
 	virtual Color ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const;
@@ -64,7 +65,12 @@ class MultiMtl : public Material
 public:
 	virtual ~MultiMtl() { for ( unsigned int i=0; i<mtls.size(); i++ ) delete mtls[i]; }
 
-	virtual Color Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const { return hInfo.mtlID<(int)mtls.size() ? mtls[hInfo.mtlID]->Shade(rays, hInfo, lights, bounceCount) : Color(1, 1, 1); }
+	virtual bool isTransparent(const HitInfo &hInfo) const {
+		return hInfo.mtlID<(int)mtls.size() ? mtls[hInfo.mtlID]->isTransparent(hInfo) : false;
+	}
+
+	virtual Color Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, bool use_indirect) 
+		const { return hInfo.mtlID<(int)mtls.size() ? mtls[hInfo.mtlID]->Shade(rays, hInfo, lights, bounceCount, use_indirect) : Color(1, 1, 1); }
 
 	virtual void SetViewportMaterial(int subMtlID=0) const { if ( subMtlID<(int)mtls.size() ) mtls[subMtlID]->SetViewportMaterial(); }
 

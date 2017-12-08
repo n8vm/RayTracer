@@ -16,6 +16,8 @@
 //-------------------------------------------------------------------------------
 
 #include "options.h"
+#include "GL/glut.h"
+#include <iostream>
 
 //-------------------------------------------------------------------------------
 
@@ -40,6 +42,7 @@ typedef cyMatrix3f Matrix3;
 typedef cyColor Color;
 typedef cyColorA ColorA;
 typedef cyColor24 Color24;
+typedef cyColor32 Color32;
 
 typedef unsigned char uchar;
 
@@ -70,6 +73,20 @@ public:
 
 struct Rays {
 	Ray mainRay = Ray(), difx = Ray(), dify = Ray();
+	Rays() {}
+	Rays(Ray r, Ray dx, Ray dy) {
+		mainRay = r;
+		difx = dx;
+		dify = dy;
+	}
+	Rays(const Rays &otherRays, float tOffset = 0.0) {
+		mainRay = otherRays.mainRay;
+		difx = otherRays.difx;
+		dify = otherRays.dify;
+		mainRay.p += tOffset * mainRay.dir;
+		difx.p += tOffset * difx.dir;
+		dify.p += tOffset * dify.dir;
+	}
 };
 
 //-------------------------------------------------------------------------------
@@ -162,9 +179,10 @@ struct HitInfo
 	const Node *node;	// the object node that was hit
 	bool front;			// true if the ray hits the front side, false if the ray hits the back side
 	int mtlID;			// sub-material index
+	int tid; // for halton
 
 	bool shadow = false; // Optimizes tracing shadows
-	HitInfo() { Init(); }
+	HitInfo(int tid) { Init(); this->tid = tid; }
 	void Init() { z = BIGFLOAT; node = NULL; front = true; uvw.Set(0.5f, 0.5f, 0.5f); duvw[0].Zero(); duvw[1].Zero(); mtlID = 0; shadow = false; }
 };
 
@@ -286,7 +304,7 @@ typedef ItemFileList<Object> ObjFileList;
 class Light : public ItemBase
 {
 public:
-	virtual Color	Illuminate(const Point3 &p, const Point3 &N) const=0;
+	virtual Color	Illuminate(const Point3 &p, const Point3 &N, int tid) const=0;
 	virtual Point3	Direction (const Point3 &p) const=0;
 	virtual bool	IsAmbient () const { return false; }
 	virtual void	SetViewportLight(int lightID) const {}	// used for OpenGL display
@@ -303,8 +321,8 @@ public:
     // ray: incoming ray,
     // hInfo: hit information for the point that is being shaded, lights: the light list,
     // bounceCount: permitted number of additional bounces for reflection and refraction.
-    virtual Color Shade(const Rays &diffRays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const=0;
- 
+    virtual Color Shade(const Rays &diffRays, const HitInfo &hInfo, const LightList &lights, int bounceCount, bool use_indirect) const=0;
+		virtual bool isTransparent(const HitInfo &hInfo) const { return false; };
     virtual void SetViewportMaterial(int subMtlID=0) const {}   // used for OpenGL display
 };
 
@@ -320,13 +338,13 @@ class Texture : public ItemBase
 {
 public:
 	// Evaluates the color at the given uvw location.
-	virtual Color Sample(const Point3 &uvw) const=0;
+	virtual ColorA Sample(const Point3 &uvw) const=0;
 
 	// Evaluates the color around the given uvw location using the derivatives duvw
 	// by calling the Sample function multiple times.
-	virtual Color Sample(const Point3 &uvw, const Point3 duvw[2], bool elliptic=true) const
+	virtual ColorA Sample(const Point3 &uvw, const Point3 duvw[2], bool elliptic=true) const
 	{
-		Color c = Sample(uvw);
+		ColorA c = Sample(uvw);
 		if ( duvw[0].LengthSquared() + duvw[1].LengthSquared() == 0 ) return c;
 		for ( int i=1; i<TEXTURE_SAMPLE_COUNT; i++ ) {
 			float x = Halton(i,2);
@@ -376,10 +394,10 @@ public:
 	TextureMap(Texture *tex) : texture(tex) {}
 	void SetTexture(Texture *tex) { texture = tex; }
 
-	virtual Color Sample(const Point3 &uvw) const { return texture ? texture->Sample(TransformTo(uvw)) : Color(0,0,0); }
-	virtual Color Sample(const Point3 &uvw, const Point3 duvw[2], bool elliptic=true) const
+	virtual ColorA Sample(const Point3 &uvw) const { return texture ? texture->Sample(TransformTo(uvw)) : ColorA(0,0,0,1); }
+	virtual ColorA Sample(const Point3 &uvw, const Point3 duvw[2], bool elliptic=true) const
 	{
-		if ( texture == NULL ) return Color(0,0,0);
+		if ( texture == NULL ) return ColorA(0,0,0,1);
 		Point3 u = TransformTo(uvw);
 		Point3 d[2];
 		d[0] = TransformTo(duvw[0]+uvw)-u;
@@ -402,28 +420,28 @@ private:
 class TexturedColor
 {
 private:
-	Color color;
+	ColorA color;
 	TextureMap *map;
 public:
 	TexturedColor() : color(0,0,0), map(NULL) {}
 	TexturedColor(float r, float g, float b) : color(r,g,b), map(NULL) {}
 	virtual ~TexturedColor() { if ( map ) delete map; }
 
-	void SetColor(const Color &c) { color=c; }
+	void SetColor(const Color &c) { color=ColorA(c); }
 	void SetTexture(TextureMap *m) { if ( map ) delete map; map=m; }
 
-	Color GetColor() const { return color; }
+	ColorA GetColor() const { return color; }
 	const TextureMap* GetTexture() const { return map; }
 
-	Color Sample(const Point3 &uvw) const { return ( map ) ? color*map->Sample(uvw) : color; }
-	Color Sample(const Point3 &uvw, const Point3 duvw[2], bool elliptic=true) const { return ( map ) ? color*map->Sample(uvw,duvw,elliptic) : color; }
+	ColorA Sample(const Point3 &uvw) const { return ( map ) ? color*map->Sample(uvw) : color; }
+	ColorA Sample(const Point3 &uvw, const Point3 duvw[2], bool elliptic=true) const { return ( map ) ? color*map->Sample(uvw,duvw,elliptic) : color; }
 
 	// Returns the color value at the given direction for environment mapping.
-	Color SampleEnvironment(const Point3 &dir) const
+	ColorA SampleEnvironment(const Point3 &dir) const
 	{ 
 		float z = asinf(-dir.z)/float(M_PI)+0.5f;
-		float x = dir.x / (fabs(dir.x)+fabs(dir.y));
-		float y = dir.y / (fabs(dir.x)+fabs(dir.y));
+		float x = (dir.x == 0 && dir.y == 0) ? 0 : dir.x / (fabs(dir.x)+fabs(dir.y));
+		float y = (dir.x == 0 && dir.y == 0) ? 0 : dir.y / (fabs(dir.x)+fabs(dir.y));
 		return Sample( Point3(0.5f,0.5f,0.0f) + z*(x*Point3(0.5f,0.5f,0) + y*Point3(-0.5f,0.5f,0)) );
 	}
 
@@ -504,6 +522,13 @@ public:
 		r.dir_inv[1] = 1.0 / r.dir[1];
 		r.dir_inv[2] = 1.0 / r.dir[2];
 		return r;
+	}
+	Rays ToNodeCoords(const Rays &rays) const {
+		Rays transformedRays;
+		transformedRays.mainRay = ToNodeCoords(rays.mainRay);
+		transformedRays.difx = ToNodeCoords(rays.difx);
+		transformedRays.dify = ToNodeCoords(rays.dify);
+		return transformedRays;
 	}
 	void FromNodeCoords( HitInfo &hInfo ) const
 	{
@@ -653,6 +678,32 @@ private:
 		return error == 0;
 	}
 };
+
+inline void _check_gl_error(const char *file, int line) {
+	GLenum err(glGetError());
+
+	while (err != GL_NO_ERROR) {
+		std::string error;
+
+		switch (err) {
+		case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
+		case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
+		case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
+		case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
+		//case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
+		}
+
+		std::cerr << "GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
+		err = glGetError();
+	}
+}
+
+///
+/// Usage
+/// [... some opengl calls]
+/// glCheckError();
+///
+#define check_gl_error() _check_gl_error(__FILE__,__LINE__)
 
 //-------------------------------------------------------------------------------
 

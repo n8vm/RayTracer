@@ -105,7 +105,7 @@
     <target x="0" y="0" z="11"/>
     <up x="0" y="0" z="1"/>
     <fov value="30"/>
-    <width value="160"/>
-    <height value="120"/>
+    <width value="800"/>
+    <height value="600"/>
   </camera>
 </xml>

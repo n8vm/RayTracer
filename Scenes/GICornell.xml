@@ -69,8 +69,9 @@
  
     <!-- Lights -->
     <light type="point" name="pointLight">
-      <intensity value="0.5"/>
+      <intensity value="80.0"/>
       <position x="0" y="0" z="22"/>
+      <size value="5"/>
     </light>
   </scene>
  
@@ -79,7 +80,7 @@
     <target x="0" y="0" z="11"/>
     <up x="0" y="0" z="1"/>
     <fov value="30"/>
-    <width value="1600"/>
-    <height value="1200"/>
+    <width value="800"/>
+    <height value="600"/>
   </camera>
 </xml>

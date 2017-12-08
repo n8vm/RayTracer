@@ -21,7 +21,7 @@ class GenLight : public Light
 {
 protected:
 	void SetViewportParam(int lightID, ColorA ambient, ColorA intensity, Point4 pos) const;
-	static float Shadow(Rays rays, float t_max = 1);
+	static float Shadow(Rays rays, int tid, float t_max = 1);
 };
 
 //-------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ class AmbientLight : public GenLight
 {
 public:
 	AmbientLight() : intensity(0, 0, 0) {}
-	virtual Color Illuminate(const Point3 &p, const Point3 &N) const { return intensity; }
+	virtual Color Illuminate(const Point3 &p, const Point3 &N, int tid) const { return intensity; }
 	virtual Point3 Direction(const Point3 &p) const { return Point3(0, 0, 0); }
 	virtual bool IsAmbient() const { return true; }
 	virtual void SetViewportLight(int lightID) const { SetViewportParam(lightID, ColorA(intensity), ColorA(0.0f), Point4(0, 0, 0, 1)); }
@@ -46,8 +46,8 @@ class DirectLight : public GenLight
 {
 public:
 	DirectLight() : intensity(0, 0, 0), direction(0, 0, 1) {}
-	virtual Color Illuminate(const Point3 &p, const Point3 &N) const { 
-		return Shadow({ Ray(p,-direction), Ray(), Ray() }) * intensity; 
+	virtual Color Illuminate(const Point3 &p, const Point3 &N, int tid) const { 
+		return Shadow({ Ray(p,-direction), Ray(), Ray() }, tid, BIGFLOAT) * intensity; 
 	}
 	virtual Point3 Direction(const Point3 &p) const { return direction; }
 	virtual void SetViewportLight(int lightID) const { SetViewportParam(lightID, ColorA(0.0f), ColorA(intensity), Point4(-direction, 0.0f)); }
@@ -65,7 +65,7 @@ class PointLight : public GenLight
 {
 public:
 	PointLight() : intensity(0, 0, 0), position(0, 0, 0), size(0) {}
-	virtual Color Illuminate(const Point3 &p, const Point3 &N) const;
+	virtual Color Illuminate(const Point3 &p, const Point3 &N, int tid) const;
 	virtual Point3 Direction(const Point3 &p) const { return (p - position).GetNormalized(); }
 	virtual void SetViewportLight(int lightID) const { SetViewportParam(lightID, ColorA(0.0f), ColorA(intensity), Point4(position, 1.0f)); }
 	void SetIntensity(Color intens) { intensity = intens; }

@@ -86,12 +86,12 @@
     </material>
 
     <!-- Lights -->
-    <light type="ambient" name="ambientLight">
+    <!-- <light type="ambient" name="ambientLight">
       <intensity value="0.3"/>
-    </light>
+    </light> -->
 
     <light type="point" name="pointLight">
-      <intensity value="0.4"/>
+      <intensity value="40"/>
       <position x="-1.1912" y="1.35329" z="4.4"/>
       <size value="10"/>
     </light>
@@ -114,8 +114,8 @@
     <up x="0" y=".1557" z=".9878"/>
     <!-- <up x="0" y="0.0" z="1.0"/> -->
     <fov value="30"/>
-    <width value="1920"/>
-    <height value="1080"/>
+    <width value="960"/>
+    <height value="540"/>
     <focaldist value="4.0"/>
     <dof value=".10"/>
   </camera>

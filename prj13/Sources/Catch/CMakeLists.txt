@@ -1,0 +1,4 @@
+set (catch_SRC 
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/catch.hpp
+	PARENT_SCOPE)

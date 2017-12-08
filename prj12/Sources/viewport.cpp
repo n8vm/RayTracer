@@ -111,7 +111,7 @@ void ShowViewport()
 	glutMouseFunc(GlutMouse);
 	glutMotionFunc(GlutMotion);
 
-	Color bg = background.GetColor();
+	Color bg = Color(background.GetColor());
 	glClearColor(bg.r,bg.g,bg.b,0);
 
 	glPointSize(3.0);
@@ -194,7 +194,7 @@ void DrawScene()
 		glPushMatrix();
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
-		Color c = background.GetColor();
+		Color c = Color(background.GetColor());
 		glColor3f(c.r,c.g,c.b);
 		if ( bgMap->SetViewportTexture() ) {
 			glEnable( GL_TEXTURE_2D );
@@ -271,6 +271,9 @@ void DrawScene()
 
 void DrawImage( void *data, GLenum type, GLenum format )
 {
+	GLenum err;
+	check_gl_error();
+
 	glBindTexture(GL_TEXTURE_2D, viewTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, renderImage.GetWidth(), renderImage.GetHeight(), 0, format, type, data); 
 
@@ -635,7 +638,7 @@ bool TextureFile::SetViewportTexture() const
 	if ( viewportTextureID == 0 ) {
 		glGenTextures(1,&viewportTextureID);
 		glBindTexture(GL_TEXTURE_2D,viewportTextureID);
-		gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, &data[0].r );
+		gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &data[0].r );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -657,7 +660,7 @@ bool TextureChecker::SetViewportTexture() const
 			if ( i/256 >= 128 ) ix = 1 - ix;
 			tex[i] = c[ix];
 		}
-		gluBuild2DMipmaps( GL_TEXTURE_2D, 3, texSize, texSize, GL_RGB, GL_UNSIGNED_BYTE, &tex[0].r );
+		gluBuild2DMipmaps( GL_TEXTURE_2D, 3, texSize, texSize, GL_RGBA, GL_UNSIGNED_BYTE, &tex[0].r );
 		delete [] tex;
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );

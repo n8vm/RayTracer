@@ -11,6 +11,8 @@ extern LightList lights;
 extern TexturedColor background;
 extern TexturedColor environment;
 
+extern HaltonIDX haltonIDX[TOTAL_THREADS];
+
 #define E 2.71828182845904523536f
 
 Rays refract(const Rays &rays/*const cyPoint3f &I*/, const cyPoint3f &N, const cyPoint3f &P, const float &ior, bool front, bool &internRefl) {
@@ -76,14 +78,12 @@ void frensel(const cyPoint3f &I, const cyPoint3f &N, const float &ior, bool fron
 	}
 }
 
-cyPoint3f getAltered(const cyPoint3f &originalDir, const float radius, bool hemisphere = false) {
-	int random = rand() >> 1;
-
+cyPoint3f getAltered(const cyPoint3f &originalDir, const float radius, int haltonIdx, bool hemisphere = false) {
 	float x, y, z;
 	do {
-		x = Halton(random, 2) * radius - (radius * 0.5);
-		y = Halton(random, 3) * radius - (radius * 0.5);
-		z = Halton(random, 5) * radius - (radius * 0.5);
+		x = Halton(haltonIdx, 2) * radius - (radius * 0.5);
+		y = Halton(haltonIdx, 3) * radius - (radius * 0.5);
+		z = Halton(haltonIdx, 5) * radius - (radius * 0.5);
 	} while (((x * x) + (y * y) + (z * z)) > (radius * radius));
 
 	cyPoint3f alter = cyPoint3f(x, y, z);
@@ -94,33 +94,6 @@ cyPoint3f getAltered(const cyPoint3f &originalDir, const float radius, bool hemi
 	if (hemisphere && ((alter % originalDir) < 0)) alter *= -1;
 
 	return (originalDir + alter).GetNormalized();
-}
-
-Rays getAltered(const Rays& originalRays, const float radius, bool hemisphere = false) {
-	int random = rand() >> 1;
-
-	float x, y, z;
-	do {
-		int random = rand() >> 1;
-		x = (2.0 * Halton(random, 2) - 1.0) * radius;
-		y = (2.0 * Halton(random, 3) - 1.0) * radius;
-		z = (2.0 * Halton(random, 5) - 1.0) * radius;
-	} while (((x * x) + (y * y) + (z * z)) > (radius * radius));
-
-	cyPoint3f alter = cyPoint3f(x, y, z);
-
-	/* If we're using a hemisphere to alter our ray, and the ray dir is going
-	a different direction than the alter ray, that alter ray is outside the hemisphere.
-	To fix, just negate the alter ray. */
-	if (hemisphere && ((alter % originalRays.mainRay.dir) < 0)) alter *= -1;
-
-
-	Rays newRays;
-	newRays.difx = Ray(originalRays.difx.p, (originalRays.difx.dir + alter).GetNormalized());
-	newRays.dify = Ray(originalRays.dify.p, (originalRays.dify.dir + alter).GetNormalized());
-	newRays.mainRay = Ray(originalRays.mainRay.p, (originalRays.mainRay.dir + alter).GetNormalized());
-
-	return newRays;
 }
 
 cyPoint3f getPointInSphere() {
@@ -147,15 +120,14 @@ cyPoint3f getPointInHemisphere(cyPoint3f normal) {
 	return result;
 }
 
-cyPoint3f CosineSampleHemisphere(cyPoint3f N)
+cyPoint3f CosineSampleHemisphere(cyPoint3f N, int idx)
 {
 	cyPoint3f from = cyPoint3f(0, 0, 1);
 	cyPoint3f to = N;
 	cyMatrix4f transform = cyMatrix4f::MatrixRotation(from, to);
 
-	int i = rand() >> 1;
-	float t = 2 * M_PI*Halton(i, 2);
-	float u = Halton(i, 3) + Halton(i, 5);
+	float t = 2 * M_PI*Halton(idx, 2);
+	float u = Halton(idx, 3) + Halton(idx, 5);
 	float r = (u > 1.0) ? 2 - u : u;
 	float dpx = r*cos(t);
 	float dpy = r*sin(t);
@@ -163,7 +135,6 @@ cyPoint3f CosineSampleHemisphere(cyPoint3f N)
 	
 	cyPoint4f point = cyPoint4f(dpx, dpy, dpz, 1);
 	cyPoint3f result = cyPoint3f(transform * point);
-
 	return result;
 }
 
@@ -222,22 +193,32 @@ Color getAbsorption(const HitInfo &hInfo, const Rays &rays, Color absorption) {
 
 Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const {
 	Color directCol = cyColor::Black();
+	ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
+	ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
 	
+	/* If the object we hit is transparent, we need to continue tracing. */
+	if (dMat.a <= 0.5) {
+		HitInfo transpInfo = HitInfo(hInfo.tid);
+		Rays newRays = Rays(rays, hInfo.z + .1);
+		bool hit = Trace(newRays, rootNode, transpInfo, HIT_FRONT_AND_BACK);
+		if (hit) {
+			const Material *hitMat = transpInfo.node->GetMaterial();
+			directCol = hitMat->Shade(newRays, transpInfo, lights, bounceCount, !USE_IRRADIANCE_CACHE);
+		}
+		return directCol;
+	}
+
 	/* For each direct light in the scene */
 	if (bounceCount >= 0)
 		for (int i = 0; i < lights.size(); i++) {
 			Light *l = lights.at(i);
 
 			/* Try to illuminate this point using the light */
-			Color li = l->Illuminate(hInfo.p, hInfo.N);
+			Color li = l->Illuminate(hInfo.p, hInfo.N, hInfo.tid);
 
 			/* Always add ambient */
-			if (l->IsAmbient()) { 
-#if USE_RAY_DIFFERENTIALS
-				directCol += diffuse.Sample(hInfo.uvw, hInfo.duvw) * li; 
-#else
-				directCol += diffuse.Sample(hInfo.uvw) * li; 
-#endif
+			if (l->IsAmbient() && ((INDIRECT_SAMPLES==0) || bounceCount==0)) { 
+				directCol += Color(dMat * ColorA(li));
 			}
 			else {
 				/* Do Blinn */
@@ -247,11 +228,7 @@ Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightL
 				/* If surface is facing the light */
 				if (dot >= 0) {
 					cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
-#if USE_RAY_DIFFERENTIALS
-					directCol += li * dot * (diffuse.Sample(hInfo.uvw, hInfo.duvw) + (specular.Sample(hInfo.uvw, hInfo.duvw) * pow(hInfo.N % H, glossiness)));
-#else
-					directCol += li * dot * (diffuse.Sample(hInfo.uvw) + (specular.Sample(hInfo.uvw) * pow(hInfo.N % H, glossiness)));
-#endif
+					directCol += Color(ColorA(li) * dot * (dMat + (sMat * pow(hInfo.N % H, glossiness))));
 				}
 			}
 		}
@@ -312,118 +289,120 @@ Color MtlBlinn::ShadeIndirect(const Rays &rays, const HitInfo &hInfo, const Ligh
 	Color indirectCol = Color::Black();
 
 #if INDIRECT_SAMPLES > 0
-	if (bounceCount == 0) return environment.SampleEnvironment(hInfo.N);
+	//if (bounceCount <= 0) {
+	//	indirectCol = Color(environment.SampleEnvironment(hInfo.N));
+	//	return indirectCol;
+	//}
 
 	int samples = 1;
-	if (bounceCount == TOTAL_BOUNCES) samples = INDIRECT_SAMPLES;
+	if (bounceCount == (TOTAL_BOUNCES - 1)) samples = INDIRECT_SAMPLES;
 		
-	bounceCount--;
 	for (int i = 0; i < samples; ++i) {
-		if (bounceCount >= 0) {
-			Rays fromPoint = Rays();
-			fromPoint.mainRay = Ray(hInfo.p, (CosineSampleHemisphere(hInfo.N)).GetNormalized());
 
-			HitInfo fromPointInfo = HitInfo();
-			Trace(fromPoint, rootNode, fromPointInfo, HIT_FRONT_AND_BACK);
+		Rays fromPoint = Rays();
+		int idx = haltonIDX[hInfo.tid].GIidx(bounceCount);
+		fromPoint.mainRay = Ray(hInfo.p, (CosineSampleHemisphere(hInfo.N, idx)).GetNormalized());
 
-			if (fromPointInfo.node == NULL) {
-				indirectCol += environment.SampleEnvironment(fromPoint.mainRay.dir);
-				continue;
-			}
-			Color intensity = fromPointInfo.node->GetMaterial()->Shade(fromPoint, fromPointInfo, lights, bounceCount);
-			cyPoint3f ldir = (fromPointInfo.p - hInfo.p).GetNormalized();
+		HitInfo fromPointInfo = HitInfo(hInfo.tid);
+		bool hit = Trace(fromPoint, rootNode, fromPointInfo, HIT_FRONT_AND_BACK);
 
-			/* Do Blinn */
-			float dot = (hInfo.N.GetNormalized() % ldir);
+		if (!hit) {
+			float dot = (hInfo.N.GetNormalized() % fromPoint.mainRay.dir);
+			indirectCol += Color(environment.SampleEnvironment(fromPoint.mainRay.dir));
+			continue;
+		}
+		Color intensity = fromPointInfo.node->GetMaterial()->Shade(fromPoint, fromPointInfo, lights, bounceCount, true);
+		cyPoint3f ldir = (fromPointInfo.p - hInfo.p).GetNormalized();
 
-			/* If surface is facing the light */
-			if (dot >= 0) {
-				//cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
+		/* Geometry term */
+		float dot = (hInfo.N.GetNormalized() % ldir);
+
+		/* If surface is facing the light */
+		if (dot >= 0) {
 #if USE_RAY_DIFFERENTIALS
-				indirectCol += intensity * dot * (diffuse.Sample(hInfo.uvw, hInfo.duvw));
+			indirectCol += Color(ColorA(intensity) * dot * (diffuse.Sample(hInfo.uvw, hInfo.duvw)));
 #else
-				indirectCol += intensity * dot * (diffuse.Sample(hInfo.uvw));
+			indirectCol += Color(ColorA(intensity) * dot * (diffuse.Sample(hInfo.uvw)));
 #endif
-				dot++;
-				// +(specular.Sample(hInfo.uvw, hInfo.duvw) * pow(hInfo.N % H, glossiness)));
-			}
-
+			dot++;
 		}
 	}
-
-	//indirectCol /= (float)samples;
 #endif
-
+	
+#if INDIRECT_SAMPLES != 0
+	return indirectCol / (float)samples;
+#else
 	return indirectCol;
+#endif
 }
 
 Color MtlBlinn::ShadeReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &fkr, Color absorped) const {
 	/* If the material has no reflection, return black */
-	if (bounceCount <= 0 || (reflection.GetColor() == cyColor::Black() && fkr <= 0)) 	
+	if (bounceCount <= 0 || (reflection.GetColor() == cyColorA::Black() && fkr <= 0)) 	
 		return cyColor::Black();
 	
 	/* Compute the reflection along the surface */
-	cyPoint3f N = getAltered(hInfo.N, reflectionGlossiness);
+	int idx = haltonIDX[hInfo.tid].Reflidx(bounceCount);
+	cyPoint3f N = getAltered(hInfo.N, reflectionGlossiness, idx);
 	Rays reflRays = reflect(rays, N, hInfo.p);
-	bounceCount--;
 
 	/* Trace that reflection through the scene */
-	HitInfo reflInfo = HitInfo();
+	HitInfo reflInfo = HitInfo(hInfo.tid);
 	Trace(reflRays, rootNode, reflInfo, HIT_FRONT_AND_BACK);
 
 #if USE_RAY_DIFFERENTIALS
-	Color temp = (reflection.Sample(reflInfo.uvw, reflInfo.duvw) + fkr) * absorped;
+	ColorA temp = (reflection.Sample(reflInfo.uvw, reflInfo.duvw) + fkr) * ColorA(absorped);
 #else
-	Color temp = (reflection.Sample(reflInfo.uvw) + fkr) * absorped;
+	ColorA temp = (reflection.Sample(reflInfo.uvw) + fkr) * ColorA(absorped);
 #endif
 
 	/* If we didn't hit something, sample the environment and return. */
 	if (reflInfo.node == NULL)
-		return environment.SampleEnvironment(reflRays.mainRay.dir.GetNormalized()) * temp;
+		return Color(environment.SampleEnvironment(reflRays.mainRay.dir.GetNormalized()) * temp);
 
 	/* Sample the reflective material */
 	const Material *hitMat = reflInfo.node->GetMaterial();
-	return hitMat->Shade(reflRays, reflInfo, lights, bounceCount) * temp;
+	return hitMat->Shade(reflRays, reflInfo, lights, bounceCount, !USE_IRRADIANCE_CACHE) * Color(temp);
 }
 
 Color MtlBlinn::ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &fkr, Color absorped) const {
 	Color refrCol = Color::Black();
 
 	/* If the material has refraction */
-	if (refraction.GetColor() != cyColor::Black()) {
+	if (refraction.GetColor() != cyColorA::Black()) {
 
 		/* Refract the ray through the volume */
 		bool internallyReflected = false;
-		cyPoint3f N = getAltered(hInfo.N, refractionGlossiness);
+		int idx = haltonIDX[hInfo.tid].Refridx(bounceCount);
+		cyPoint3f N = getAltered(hInfo.N, refractionGlossiness, idx);
 		Rays refrRays = refract(rays, N, hInfo.p, ior, hInfo.front, internallyReflected);
-		bounceCount--;
 
 		/* Also compute how much of the ray was reflected due to the frensel effect. */
 		frensel(rays.mainRay.dir, N, ior, hInfo.front, fkr);
 
 		/* If a ray is internally reflected, it does not refract, so we don't trace it's refraction. */
 		if (!internallyReflected) {
-			HitInfo refrInfo = HitInfo();
+			HitInfo refrInfo = HitInfo(hInfo.tid);
 			Trace(refrRays, rootNode, refrInfo, HIT_FRONT_AND_BACK);
 
 			/* If we hit something */
 			if (refrInfo.node != NULL) {
 				const Material *hitMat = refrInfo.node->GetMaterial();
 #if USE_RAY_DIFFERENTIALS
-				Color finalRefr = (internallyReflected) ? Color::Black() : (refraction.Sample(refrInfo.uvw, refrInfo.duvw) - fkr) * absorped;
+				Color finalRefr = (internallyReflected) ? Color::Black() : Color((refraction.Sample(refrInfo.uvw, refrInfo.duvw) - fkr) * ColorA(absorped));
 #else
-				Color finalRefr = (internallyReflected) ? Color::Black() : (refraction.Sample(refrInfo.uvw) - fkr) * absorped;
+				Color finalRefr = (internallyReflected) ? Color::Black() : Color((refraction.Sample(refrInfo.uvw) - fkr) * ColorA(absorped));
 #endif
 				finalRefr.r = MAX(finalRefr.r, 0); finalRefr.g = MAX(finalRefr.g, 0); finalRefr.b = MAX(finalRefr.b, 0);
-				refrCol += hitMat->Shade(refrRays, refrInfo, lights, bounceCount) * finalRefr;
+				refrCol += hitMat->Shade(refrRays, refrInfo, lights, bounceCount, !USE_IRRADIANCE_CACHE) * finalRefr;
 			}
 
 			/* Else sample from the environment map */
 			else {
 #if USE_RAY_DIFFERENTIALS
-				refrCol += environment.SampleEnvironment(refrRays.mainRay.dir.GetNormalized()) * (refraction.Sample(refrInfo.uvw, refrInfo.duvw) - fkr) * absorped;
+				refrCol += Color(environment.SampleEnvironment(refrRays.mainRay.dir.GetNormalized()) * (refraction.Sample(refrInfo.uvw, refrInfo.duvw) - fkr) * ColorA(absorped));
 #else
-				refrCol += environment.SampleEnvironment(refrRays.mainRay.dir.GetNormalized()) * (refraction.Sample(refrInfo.uvw) - fkr) * absorped;
+				refrCol += Color(environment.SampleEnvironment(refrRays.mainRay.dir.GetNormalized()) * (refraction.Sample(refrInfo.uvw) - fkr) * ColorA(absorped));
 #endif
 			}
 		}
@@ -432,18 +411,28 @@ Color MtlBlinn::ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const Li
 	return refrCol;
 }
 
-Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const
+Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, bool use_indirect) const
 {
 	if (bounceCount <= 0) return Color::Black();
 	Color directCol = Color::Black(), indirectCol = Color::Black(), reflCol = Color::Black(), refrCol = Color::Black();
 	Color absorped = getAbsorption(hInfo, rays, absorption);
 	float frenselkr = 0.f;
-		
+
+	bounceCount--;
+
 	/* L(x, wo) = Lemmitted(x, wo) + integral( fs(wi, wo) * L(x', wi) * (N dot wi) * V(x, x') dwi ) */
 	refrCol = ShadeRefraction(rays, hInfo, lights, bounceCount, frenselkr, absorped);
 	reflCol = ShadeReflection(rays, hInfo, lights, bounceCount, frenselkr, absorped);
 	directCol = ShadeDirect(rays, hInfo, lights, bounceCount);
-	indirectCol = ShadeIndirect(rays, hInfo, lights, bounceCount);
+
+	if (use_indirect)
+		indirectCol = ShadeIndirect(rays, hInfo, lights, bounceCount);
 	
+
 	return (directCol + indirectCol + reflCol + refrCol);
+}
+
+bool MtlBlinn::isTransparent(const HitInfo &hInfo) const {
+	ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
+	return (dMat.a < .5);
 }

@@ -176,8 +176,8 @@
       <diffuse value="0"/>
       <specular value="0.2"/>
       <!-- <glossiness value="100"/> -->
-      <refraction index="1.45" r=".9" g=".9" b=".9"/>
-      <absorption r=".809" g=".86" b=".75"/>
+      <refraction index="1.45" value="1"/>
+      <absorption r=".609" g=".66" b=".355"/>
     </material>
 
         <material type="blinn" name="grey">
