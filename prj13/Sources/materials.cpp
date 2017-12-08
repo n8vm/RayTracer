@@ -521,7 +521,7 @@ Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &l
 	if (directType == PATH_TRACING)
 		directColor = ShadeDirect(rays, hInfo, lights, bounceCount, directType, indirectType);
 
-	if (indirectType != NONE) {
+	if (indirectType != NO_ILLUMINATION) {
 		if (indirectType == PATH_TRACING || (TOTAL_BOUNCES - bounceCount < INITIAL_PATH_TRACES))
 			//(USE_PHOTON_MAPPING && bounceCount == TOTAL_BOUNCES && INDIRECT_SAMPLES != 0) || !USE_PHOTON_MAPPING)
 			indirectColor = ShadeIndirectPathTracing(rays, hInfo, lights, bounceCount, directType, indirectType);

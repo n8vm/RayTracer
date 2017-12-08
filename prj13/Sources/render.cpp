@@ -306,7 +306,7 @@ void computeIrradiance(int tid) {
 	while (irradianceMap->ComputeNextPoint(tid));
 }
 
-std::atomic_int recordedPhotons = 0;
+std::atomic_int recordedPhotons;
 void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, MapType mapType, std::string consoleKey) {
 	using namespace std;
 	recordedPhotons = 0;
