@@ -3,7 +3,7 @@
 #define USE_HALTON true
 #define TOTAL_THREADS 5
 #define SHOW_VIEWPORT true
-#define SCENE "photonCornell.xml"
+#define SCENE "PhotonCornell.xml"
 
 /* Camera Settings */
 #define SHOW_NORMALS false
