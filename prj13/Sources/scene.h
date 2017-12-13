@@ -217,24 +217,48 @@ struct HitInfo
 struct PixelStatistics
 {
 	int totalHits = 0;
+	int totalReflHits = 0;
+	int totalRefrHits = 0;
 	float px_weight;														// The weight of the current pixel sample
 	int x, y;																		// The pixel coordinates.
 	float R = PHOTON_SPHERE_RADIUS;							// Current photon radius
+	float RRefl = REFLECTION_SPHERE_RADIUS;							// Current photon radius
+	float RRefr = REFRACTION_SPHERE_RADIUS;							// Current photon radius
 	float newRadius = PHOTON_SPHERE_RADIUS;			// Current photon radius
+	float newReflRadius = REFLECTION_SPHERE_RADIUS;			// Current photon radius
+	float newRefrRadius = REFRACTION_SPHERE_RADIUS;			// Current photon radius
 	int SharedLocalPhotonCount = 0;							// Accumulated photon count
+	int SharedLocalReflectivePhotonCount = 0;							// Accumulated photon count
+	int SharedLocalRefractivePhotonCount = 0;							// Accumulated photon count
 	int additionalPhotons = 0;									// Accumulated photon count
+	int additionalReflectivePhotons = 0;									// Accumulated photon count
+	int additionalRefractivePhotons = 0;									// Accumulated photon count
 	int totalPhotons;
+	int totalRefractivePhotons;
+	int totalReflectivePhotons;
 	Color	totalFlux = Color::Black();						// Accumulated reflected flux
+	Color	totalReflectiveFlux = Color::Black();						// Accumulated reflected flux
+	Color	totalRefractiveFlux = Color::Black();						// Accumulated reflected flux
 	Color	additionalFlux = Color::Black();			// Accumulated reflected flux
+	Color	additionalReflectiveFlux = Color::Black();			// Accumulated reflected flux
+	Color	additionalRefractiveFlux = Color::Black();			// Accumulated reflected flux
 	Color directContribution = Color::Black();
 	Color additionalDirectContribution = Color::Black();
 	Color indirectContribution = Color::Black();
+	Color indirectReflectionContribution = Color::Black();
+	Color indirectRefractionContribution = Color::Black();
 	Color additionalIndirectContribution = Color::Black();
+	Color additionalIndirectReflectiveContribution = Color::Black();
+	Color additionalIndirectRefractiveContribution = Color::Black();
 	int itteration = 1;
 	void Update() {
 		//RPrime = R * sqrt((Ni(S) + PHOTON_ALPHA*Mx)/(float)(Ni(S)+Mx));
 		float nisamx = SharedLocalPhotonCount + PHOTON_ALPHA * additionalPhotons;
+		float nisamxrfr = SharedLocalRefractivePhotonCount + PHOTON_ALPHA * additionalRefractivePhotons;
+		float nisamxrfl = SharedLocalReflectivePhotonCount + PHOTON_ALPHA * additionalReflectivePhotons;
 		float nismx = SharedLocalPhotonCount + additionalPhotons;
+		float nismxrfr = SharedLocalRefractivePhotonCount + additionalRefractivePhotons;
+		float nismxrfl = SharedLocalReflectivePhotonCount + additionalReflectivePhotons;
 		if (nismx > 0.0) {
 			newRadius = R * sqrt((nisamx) / (float)(nismx));
 		
@@ -246,16 +270,46 @@ struct PixelStatistics
 			R = newRadius;
 		}
 
+		if (nismxrfr > 0.0) {
+			newRefrRadius = RRefr * sqrt((nisamxrfr) / (float)(nismxrfr));
+
+			// Ni+1(S) = Ni(S) + PHOTON_ALPHA * Mi(X)
+			SharedLocalRefractivePhotonCount = (itteration == 1) ? additionalRefractivePhotons : SharedLocalRefractivePhotonCount + PHOTON_ALPHA * additionalRefractivePhotons;
+
+			// ti+1(x,w) = (ti(x,w) + o(x,w)) * Ri+1^2/Ri^2
+			totalRefractiveFlux = (itteration == 1) ? additionalRefractiveFlux : (totalRefractiveFlux + additionalRefractiveFlux) * ((newRefrRadius * newRefrRadius) / (RRefr * RRefr));
+			RRefr = newRefrRadius;
+		}
+
+		if (nismxrfl > 0.0) {
+			newReflRadius = RRefl * sqrt((nisamxrfl) / (float)(nismxrfl));
+
+			// Ni+1(S) = Ni(S) + PHOTON_ALPHA * Mi(X)
+			SharedLocalReflectivePhotonCount = (itteration == 1) ? additionalReflectivePhotons : SharedLocalReflectivePhotonCount + PHOTON_ALPHA * additionalReflectivePhotons;
+
+			// ti+1(x,w) = (ti(x,w) + o(x,w)) * Ri+1^2/Ri^2
+			totalReflectiveFlux = (itteration == 1) ? additionalReflectiveFlux : (totalReflectiveFlux + additionalReflectiveFlux) * ((newReflRadius * newReflRadius) / (RRefl * RRefl));
+			RRefl = newReflRadius;
+		}
+
 		additionalPhotons = 0;
+		additionalReflectivePhotons = 0;
+		additionalRefractivePhotons = 0;
 		additionalFlux = Color::Black();
+		additionalReflectiveFlux = Color::Black();
+		additionalRefractiveFlux = Color::Black();
 
 		//directContribution = additionalDirectContribution;
 		directContribution += (additionalDirectContribution - directContribution) / (float)itteration;
 		//indirectContribution += (additionalIndirectContribution - indirectContribution) / (float)itteration;
 		indirectContribution = additionalIndirectContribution;
+		indirectReflectionContribution = additionalIndirectReflectiveContribution;
+		indirectRefractionContribution = additionalIndirectRefractiveContribution;
 
 		additionalDirectContribution = Color::Black();
 		additionalIndirectContribution = Color::Black();
+		additionalIndirectReflectiveContribution = Color::Black();
+		additionalIndirectRefractiveContribution = Color::Black();
 		itteration++;
 	}
 };

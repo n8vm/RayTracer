@@ -372,39 +372,89 @@ Color MtlBlinn::ShadeIndirectPhotonMapping(const Rays &rays, const HitInfo &hInf
 }
 
 Color MtlBlinn::ShadeCausticRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics) const {
-	Color refr_photon_col = Color::Black();
+	Color photon_col = Color::Black();
 	if (USE_CAUSTIC_REFRACTIONS) {
-		cyPoint3f direction;
-		Color illumination;
-		refractionMap->EstimateIrradiance<MAX_CAUSTIC_REFRACTION_SAMPLES>(illumination, direction, REFRACTION_SPHERE_RADIUS, hInfo.p);
 
-		cyPoint3f ldir = direction;
+		if (ContainsDiffuse()) {
+			ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
+			ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
 
-		ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
-		ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
+			if (USE_SPPM) {
+				/* Saving photon color elsewhere for post normalization*/
+				Color photon_col = Color::Black();
+				statistics.totalRefrHits++;
+				cyPoint3f direction;
+				Color tm = Color::Black();
+				int nx = statistics.SharedLocalRefractivePhotonCount; int mx = 0;
+				refractionMap->EstimateProgressiveIrradiance<MAX_CAUSTIC_REFRACTION_SAMPLES>(tm, direction, statistics.RRefr, nx, mx, hInfo.p);
+				direction.Normalize();
+				if (mx > 0) {
+					statistics.additionalRefractivePhotons += mx;
+					statistics.additionalRefractiveFlux += tm;
+				}
+				photon_col = ((statistics.SharedLocalRefractivePhotonCount == 0) ? tm : statistics.totalRefractiveFlux) * Color(dMat);
 
-	//	cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
-		refr_photon_col = Color(ColorA(illumination) * (dMat/* + sMat * pow(hInfo.N % H, glossiness)*/));
+				float area = (float)M_PI*statistics.RRefr*statistics.RRefr;
+				photon_col = (photon_col * CAUSTIC_REFRACTION_SCALE) / (statistics.totalRefractivePhotons * area);
+				statistics.additionalIndirectRefractiveContribution += photon_col;
+			}
+			else {
+				cyPoint3f direction;
+				Color illumination;
+				reflectionMap->EstimateIrradiance<MAX_CAUSTIC_REFRACTION_SAMPLES>(illumination, direction, REFRACTION_SPHERE_RADIUS, hInfo.p);
+
+				cyPoint3f ldir = direction;
+				float dot = (hInfo.N.GetNormalized() % ldir.GetNormalized());
+
+				cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
+				photon_col = Color(ColorA(illumination) * (dMat + sMat * pow(hInfo.N % H, glossiness)));
+			}
+		}
 	}
-	return refr_photon_col;
+	return photon_col;
 }
 
 Color MtlBlinn::ShadeCausticReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics) const {
-	Color refl_photon_col = Color::Black();
+	Color photon_col = Color::Black();
 	if (USE_CAUSTIC_REFLECTIONS) {
-		cyPoint3f direction;
-		Color illumination;
-		reflectionMap->EstimateIrradiance<MAX_CAUSTIC_REFLECTION_SAMPLES>(illumination, direction, REFLECTION_SPHERE_RADIUS, hInfo.p);
 
-		cyPoint3f ldir = direction;
+		if (ContainsDiffuse()) {
+			ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
+			ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
 
-		ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
-		ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
+			if (USE_SPPM) {
+				/* Saving photon color elsewhere for post normalization*/
+				Color photon_col = Color::Black();
+				statistics.totalReflHits++;
+				cyPoint3f direction;
+				Color tm = Color::Black();
+				int nx = statistics.SharedLocalReflectivePhotonCount; int mx = 0;
+				reflectionMap->EstimateProgressiveIrradiance<MAX_CAUSTIC_REFLECTION_SAMPLES>(tm, direction, statistics.RRefl, nx, mx, hInfo.p);
+				direction.Normalize();
+				if (mx > 0) {
+					statistics.additionalReflectivePhotons += mx;
+					statistics.additionalReflectiveFlux += tm;
+				}
+				photon_col = ((statistics.SharedLocalReflectivePhotonCount == 0) ? tm : statistics.totalReflectiveFlux) * Color(dMat);
 
-	//	cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
-		refl_photon_col = Color(ColorA(illumination) * (dMat/* + sMat * pow(hInfo.N % H, glossiness)*/));
+				float area = (float)M_PI*statistics.RRefl*statistics.RRefl;
+				photon_col = (photon_col * CAUSTIC_REFLECTION_SCALE) / (statistics.totalReflectivePhotons * area);
+				statistics.additionalIndirectReflectiveContribution += photon_col;
+			}
+			else {
+				cyPoint3f direction;
+				Color illumination;
+				reflectionMap->EstimateIrradiance<MAX_CAUSTIC_REFLECTION_SAMPLES>(illumination, direction, REFLECTION_SPHERE_RADIUS, hInfo.p);
+
+				cyPoint3f ldir = direction;
+				float dot = (hInfo.N.GetNormalized() % ldir.GetNormalized());
+
+				cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
+				photon_col = Color(ColorA(illumination) * (dMat + sMat * pow(hInfo.N % H, glossiness)));
+			}
+		}
 	}
-	return refl_photon_col;
+	return photon_col;
 }
 
 Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, 
@@ -434,8 +484,8 @@ Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &l
 			indirectColor = ShadeIndirectPathTracing(rays, hInfo, lights, bounceCount, statistics, directType, indirectType);
 		else if (indirectType == PHOTON) {
 			indirectColor = ShadeIndirectPhotonMapping(rays, hInfo, lights, bounceCount, statistics);
-			//indirectColor += ShadeCausticReflection(rays, hInfo, lights, bounceCount, statistics);
-			//indirectColor += ShadeCausticRefraction(rays, hInfo, lights, bounceCount, statistics);
+			indirectColor += ShadeCausticReflection(rays, hInfo, lights, bounceCount, statistics);
+			indirectColor += ShadeCausticRefraction(rays, hInfo, lights, bounceCount, statistics);
 		}
 	}
 	
@@ -540,8 +590,8 @@ bool MtlBlinn::BouncePhoton(BounceInfo &bInfo, const HitInfo &hInfo) const {
 		OR we're CAUSTIC REFLECTIONS and the last ray was reflective
 		*/ // I BROKE THIS! FIX IT
 		if ( (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && (bInfo.bounceType == BounceType::DIFFUSE || bInfo.bounceType == BounceType::NONE) )
-			|| (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::REFRACTIVE)
-			|| (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::REFLECTIVE)) {
+			|| (bInfo.mapType == MapType::CAUSTIC_REFRACTIONS && bInfo.bounceType == BounceType::REFRACTIVE)
+			|| (bInfo.mapType == MapType::CAUSTIC_REFLECTIONS && bInfo.bounceType == BounceType::REFLECTIVE)) {
 			photonMutex.lock();
 			if (SAVE_DIRECT_PHOTON || bInfo.directHit == true) {
 				bInfo.map->AddPhoton(hInfo.p, (bInfo.ray.p - hInfo.p).GetNormalized(), bInfo.power);

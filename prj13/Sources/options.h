@@ -3,7 +3,7 @@
 #define USE_HALTON true
 #define TOTAL_THREADS 5
 #define SHOW_VIEWPORT true
-#define SCENE "competition2.xml"
+#define SCENE "cornellWObj.xml"
 
 /* Camera Settings */
 #define SHOW_NORMALS false
@@ -58,8 +58,8 @@
 			Irradiance maps are helpful to smooth photon mapping out*/
 #define USE_SPPM true // Stochastic Progressive Photon Mapping
 #define USE_PHOTON_MAPPING true
-#define USE_CAUSTIC_REFRACTIONS true
-#define USE_CAUSTIC_REFLECTIONS true
+#define USE_CAUSTIC_REFRACTIONS false
+#define USE_CAUSTIC_REFLECTIONS false
 
 #define USE_CACHED_PHOTON_MAP true
 #define USE_CACHED_REFRACTIONS true
