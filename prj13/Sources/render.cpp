@@ -173,6 +173,8 @@ void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, flo
 				if (statistics.totalReflHits != 0)
 					sampleColor += (statistics.indirectReflectionContribution / (float)statistics.totalReflHits);
 				statistics.totalHits = 0;
+				statistics.totalRefrHits = 0;
+				statistics.totalReflHits = 0;
 			}
 			else sampleColor = hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, statistics, directType, indirectType);
 			//statistics.Update();
@@ -596,6 +598,8 @@ void render_sppm() {
 
 		sppmItteration++;
 		delete(photonMap);
+		delete(reflectionMap);
+		delete(refractionMap);
 		renderImage.SaveImage("Image.png");
 	}
 }
