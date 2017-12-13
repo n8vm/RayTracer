@@ -1,0 +1,118 @@
+<xml>
+<scene>
+
+<object type="obj" name="competition/highres/b1.obj" material="wall"/>
+<object type="obj" name="competition/highres/b2.obj" material="wallBlue"/>
+<object type="obj" name="competition/highres/b3.obj" material="wallRed"/>
+
+<object name="brokenTeapot1">
+	<object type="obj" name="competition/highres/m1.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/m2.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/m3.obj" material="mtl3"/>
+
+
+
+	<object type="obj" name="competition/highres/s1.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/s2.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/s3.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/s4.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/s5.obj" material="mtl3"/>
+
+
+	<object type="obj" name="competition/highres/sp1.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/sp2.obj" material="mtl3"/>
+
+
+	<object type="obj" name="competition/highres/t1.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/t3.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/t4.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/t5.obj" material="mtl3"/>
+	<object type="obj" name="competition/highres/t7.obj" material="mtl3"/>
+
+</object>
+
+<!-- -->
+<!-- 		<object type="obj" name="solid_teapot.obj" material="mtl3">
+<scale value="0.8"/>
+<rotate angle="-30" z="1"/>
+<translate x="0" y="5" z="0"/>
+	<object type="obj" name="teapot.obj" material="mtl1">
+		<scale value="0.5"/>
+	</object>
+</object> -->
+<!--
+<object type="sphere" name="sphere1" material="mtl2">
+<scale value="4"/>
+<translate x="8" y="-6" z="4"/>
+</object>
+<object type="sphere" name="sphere2" material="mtl3">
+<scale value="4"/>
+<translate x="-8" y="-6" z="4"/>
+</object>
+-->
+
+<!-- Materials -->
+<material type="blinn" name="wall">
+<!-- <diffuse  r=".01" g=".01" b=".01"/> -->
+<diffuse  r="1" g="1" b="1"/>
+<!-- <reflection value=".3"/> -->
+<specular value="0"/>
+</material>
+<material type="blinn" name="wallRed">
+<diffuse  r="1.0" g="0.5" b="0.5"/>
+<specular value="0"/>
+</material>
+<material type="blinn" name="wallBlue">
+<diffuse  r="0.5" g="0.5" b="1.0"/>
+<specular value="0"/>
+</material>
+
+
+<material type="blinn" name="mtl1">
+<diffuse  r="0.833333" g="0.742857" b="0.742857"/>
+<diffuse  r="0.415333" g="0.372857" b="0.372857"/>
+<diffuse  r="0.205333" g="0.232857" b="0.232857"/>
+<specular r="1.0" g="1.0" b="1.0" value="0.7"/>
+<glossiness value="20"/>
+</material>
+<material type="blinn" name="mtl2">
+<diffuse  value="0"/>
+<specular value="1.0"/>
+<glossiness value="80"/>
+<reflection value="1.0"/>
+</material>
+<material type="blinn" name="mtl3">
+<diffuse  value="0"/>
+<specular value="0.0"/>
+<!-- <glossiness value="80"/> -->
+<refraction value="1.0" index="1.52"/>
+            <absorption r="0.2" g="0.2" b="0.001"/>
+
+		<!-- <absorption r="0.5" g="0.001" b="0.001"/> -->
+</material>
+
+<!-- Lights -->
+<light type="point" name="pointLight">
+<intensity value="2.0"/>
+<position x="-1.57371" y="-.06601" z="2.54951"/>
+</light>
+
+<light type="point" name="pointLight">
+<intensity value="2.0"/>
+<position x="1.44611" y="-.52038" z="2.54951"/>
+</light>
+
+
+</scene>
+
+<camera>
+<position x="-0.659242" y="-3.80068" z="0.111384"/>
+<target x="-.1" y="0" z=".6"/>
+<up x="0" y="0" z="1"/>
+<fov value="30"/>
+<width value="1920"/>
+<width value="960"/>
+<height value="1080"/>
+<height value="540"/>
+</camera>
+</xml>

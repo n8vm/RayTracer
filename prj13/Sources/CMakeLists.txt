@@ -23,6 +23,8 @@ set(SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/viewport.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/render.h
 	${CMAKE_CURRENT_SOURCE_DIR}/render.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/trace.h
+	${CMAKE_CURRENT_SOURCE_DIR}/morton.h
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
 	)
 

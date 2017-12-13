@@ -7,7 +7,7 @@
                 <scale value="32"/>
                 <translate z="-12"/>
             </object>
-            <object type="plane" name="WallTop" material="wall">
+             <object type="plane" name="WallTop" material="wall">
                 <scale value="32"/>
                 <rotate angle="180" x="1"/>
                 <translate z="12"/>
@@ -28,30 +28,31 @@
                 <translate x="15"/>
             </object>
         </object>
-        <object type="obj" name="FTeapot_Body.obj" material="mtl1">
-            <scale value="0.50"/>
-            <rotate angle="-30" z="1"/>
-            <translate x="2" y="5" z="0"/>
-        </object>
-        <object type="obj" name="FTeapot_Lid.obj" material="mtl1">
-            <scale value="0.50"/>
-            <rotate angle="-30" z="1"/>
-            <translate x="2" y="5" z="0"/>
-        </object>
 
-<!--         <object type="obj" name="teapot.obj" material="mtl1">
+         <object type="obj" name="FTeapot_Body.obj" material="mtl3">
+            <scale value="0.60"/>
+            <rotate angle="-45" z="1"/>
+            <translate x="0" y="5" z="0.1"/>
+        </object>
+        <object type="obj" name="FTeapot_Lid.obj" material="mtl3">
+            <scale value="0.60"/>
+            <rotate angle="-45" z="1"/>
+            <translate x="0" y="5" z="0.2"/>
+        </object> 
+
+<!--          <object type="obj" name="teapot.obj" material="mtl1">
             <scale value="0.8"/>
             <rotate angle="-30" z="1"/>
             <translate x="2" y="5" z="0"/>
-        </object> -->
-        <object type="sphere" name="sphere1" material="mtl2">
-            <scale value="4"/>
-            <translate x="8" y="-6" z="4"/>
+        </object>  -->
+<!--         <object type="sphere" name="sphere1" material="mtl2">
+            <scale value="3.5"/>
+            <translate x="8" y="-7" z="3.5"/>
         </object>
         <object type="sphere" name="sphere2" material="mtl3">
-            <scale value="4"/>
-            <translate x="-8" y="-6" z="4"/>
-        </object>
+            <scale value="3.5"/>
+            <translate x="-8" y="-7" z="3.5"/>
+        </object> -->
  
         <!-- Materials -->
         <material type="blinn" name="wall">
@@ -82,12 +83,16 @@
             <specular value="1.0"/>
             <glossiness value="80"/>
             <refraction value="1.0" index="1.52"/>
+            <!-- <reflection value="0.5" index="1.52"/> -->
+            <!-- <absorption r="0.2" g="0.2" b="0.001"/>
+ -->
         </material>
  
         <!-- Lights -->
         <light type="point" name="pointLight">
             <intensity value="100.5"/>
             <position x="0" y="0" z="22"/>
+            <!-- <position x="0" y="0" z="12"/> -->
         </light>
     </scene>
  
@@ -96,7 +101,7 @@
         <target x="0" y="0" z="12"/>
         <up x="0" y="0" z="1"/>
         <fov value="30"/>
-        <width value="400"/>
-        <height value="300"/>
+        <width value="800"/>
+        <height value="600"/>
     </camera>
 </xml>

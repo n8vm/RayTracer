@@ -2,6 +2,7 @@
 #include "render.h"
 #include "lights.h"
 #include <math.h>
+#include "trace.h"
 
 extern Camera camera;
 extern RenderImage renderImage;
@@ -15,109 +16,6 @@ extern cy::PhotonMap *refractionMap;
 extern cy::PhotonMap *reflectionMap;
 
 extern HaltonIDX haltonIDX[TOTAL_THREADS];
-
-#define E 2.71828182845904523536f
-
-Rays refract(const Rays &rays/*const cyPoint3f &I*/, const cyPoint3f &N, const cyPoint3f &P, const float &ior, bool front, bool &internRefl) {
-	// T = nI + (nc1 - c2)N
-	// n = iorV / iorT
-	// c1 = N % I
-	// c2 = sqrt(1 - pow(n,2) * (1 - pow(c1, 2))), if imaginary => internal reflection
-	
-	float cosi = MAX(-1.f, MIN(N % rays.mainRay.dir, 1.f));
-	float iorV = 1.f, iorT = ior;
-
-	cyPoint3f N_ = N;
-	if (front) {
-		// Hitting a front face, make sure NdotI is positive
-		cosi = -cosi;
-	}
-	else {
-		// Hitting back face, reverse surface normal, and swap iors
-		N_ = -N;
-		std::swap(iorV, iorT);
-	}
-
-	float n = iorV / iorT;
-	float c2squared = 1.f - n * n * (1.f - cosi * cosi);
-
-	Rays Ts;
-	if (c2squared < 0.f) {
-		internRefl = true;
-	}
-	else { 
-		cyPoint3f temp = (n * cosi - sqrtf(c2squared)) * N_;
-		internRefl = false;
-		Ts.mainRay.p = P;
-		Ts.mainRay.dir = n * rays.mainRay.dir + temp;
-		Ts.mainRay.dir_inv = invertPoint(Ts.mainRay.dir);
-		
-		Ts.difx.p = P;
-		Ts.difx.dir = n * rays.difx.dir + temp;
-		//Ts.difx.dir_inv = invertPoint(Ts.difx.dir);
-
-		Ts.dify.p = P;
-		Ts.dify.dir = n * rays.dify.dir + temp;
-		//Ts.dify.dir_inv = invertPoint(Ts.dify.dir);
-
-	}
-
-	return Ts;
-}
-
-Ray refract(const Ray &ray, const cyPoint3f &N, const cyPoint3f &P, const float &ior, bool front, bool &internRefl) {
-	// T = nI + (nc1 - c2)N
-	// n = iorV / iorT
-	// c1 = N % I
-	// c2 = sqrt(1 - pow(n,2) * (1 - pow(c1, 2))), if imaginary => internal reflection
-
-	float cosi = MAX(-1.f, MIN(N % ray.dir, 1.f));
-	float iorV = 1.f, iorT = ior;
-
-	cyPoint3f N_ = N;
-	if (front) {
-		// Hitting a front face, make sure NdotI is positive
-		cosi = -cosi;
-	}
-	else {
-		// Hitting back face, reverse surface normal, and swap iors
-		N_ = -N;
-		std::swap(iorV, iorT);
-	}
-
-	float n = iorV / iorT;
-	float c2squared = 1.f - n * n * (1.f - cosi * cosi);
-
-	Ray Ts;
-	if (c2squared < 0.f) {
-		internRefl = true;
-	}
-	else {
-		cyPoint3f temp = (n * cosi - sqrtf(c2squared)) * N_;
-		internRefl = false;
-		Ts.p = P;
-		Ts.dir = n * ray.dir + temp;
-		Ts.dir_inv = invertPoint(Ts.dir);
-	}
-
-	return Ts;
-}
-
-void frensel(const cyPoint3f &I, const cyPoint3f &N, const float &ior, bool front, float &kr) {
-	float cosi = MAX(-1.f, MIN(N % I, 1.f));
-	float iorV = 1.f, iorT = ior;
-
-	if (!front) std::swap(iorV, iorT);
-	float sint = iorV / iorT * sqrtf(MAX(0.f, 1.f - cosi * cosi));
-	if (sint >= 1.f) kr = 1.f; // Total internal reflection.
-	else {
-		float cost = sqrtf(MAX(0.f, 1.f - sint * sint));
-		cosi = fabsf(cosi);
-		float Rs = ((iorT * cosi) - (iorV * cost)) / ((iorT * cosi) + (iorV * cost));
-		float Rp = ((iorV * cosi) - (iorT * cost)) / ((iorV * cosi) + (iorT * cost));
-		kr = (Rs * Rs + Rp * Rp) / 2.f;
-	}
-}
 
 cyPoint3f getAltered(const cyPoint3f &originalDir, const float radius, int haltonIdx, bool hemisphere = false) {
 	float x, y, z;
@@ -231,31 +129,6 @@ cyPoint3f getRandomRay(const cyPoint3f& hemisphereDirection) {
 	return alter;
 }
 
-Ray reflect(const Ray &ray, const cyPoint3f &N, const cyPoint3f &P) {
-	Ray newRay;
-	auto temp = (2.f *  N * (ray.dir % N));
-	newRay.p = P;
-	newRay.dir = ray.dir - temp;
-	return newRay;
-}
-
-Rays reflect(const Rays &rays, const cyPoint3f &N, const cyPoint3f &P) {
-	Rays newRays;
-	
-	auto temp = (2.f *  N * (rays.mainRay.dir % N));
-
-	newRays.mainRay.p = newRays.difx.p = newRays.dify.p = P;
-
-	newRays.mainRay.dir = rays.mainRay.dir - temp;
-	newRays.mainRay.dir_inv = invertPoint(newRays.mainRay.dir);
-	newRays.difx.dir = rays.difx.dir - temp;
-	//newRays.difx.dir_inv = invertPoint(newRays.difx.dir);
-	newRays.dify.dir = rays.dify.dir - temp;
-	//newRays.dify.dir_inv = invertPoint(newRays.dify.dir);
-
-	return newRays;
-}
-
 Color getAbsorption(const HitInfo &hInfo, const Rays &rays, Color absorption) {
 	Color absorped = Color::White();
 
@@ -270,11 +143,21 @@ Color getAbsorption(const HitInfo &hInfo, const Rays &rays, Color absorption) {
 	return absorped;
 }
 
+Color getAbsorption(const HitInfo &hInfo, const Ray &ray, Color absorption) {
+	Color absorped = Color::White();
 
+	/* Compute how much light is absorped by the material. */
+	if (!hInfo.front && absorption != Color::Black()) {
+		float h = (hInfo.p - ray.p).Length();
+		absorped.r = pow(E, -h * absorption.r);
+		absorped.g = pow(E, -h * absorption.g);
+		absorped.b = pow(E, -h * absorption.b);
+	}
 
+	return absorped;
+}
 
-
-Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, IlluminationType directType, IlluminationType indirectType) const {
+Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics, IlluminationType directType, IlluminationType indirectType) const {
 	Color directCol = cyColor::Black();
 	ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
 	ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
@@ -286,7 +169,7 @@ Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightL
 		bool hit = Trace(newRays, rootNode, transpInfo, HIT_FRONT_AND_BACK);
 		if (hit) {
 			const Material *hitMat = transpInfo.node->GetMaterial();
-			directCol = hitMat->Shade(newRays, transpInfo, lights, bounceCount, directType, indirectType);
+			directCol = hitMat->Shade(newRays, transpInfo, lights, bounceCount, statistics, directType, indirectType);
 		}
 		return directCol;
 	}
@@ -319,7 +202,7 @@ Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightL
 	return directCol;
 }
 
-Color MtlBlinn::ShadeIndirectPathTracing(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, IlluminationType directType, IlluminationType indirectType) const {
+Color MtlBlinn::ShadeIndirectPathTracing(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics, IlluminationType directType, IlluminationType indirectType) const {
 	Color indirectCol = Color::Black();
 
 #if INDIRECT_SAMPLES > 0
@@ -345,7 +228,7 @@ Color MtlBlinn::ShadeIndirectPathTracing(const Rays &rays, const HitInfo &hInfo,
 			indirectCol += Color(environment.SampleEnvironment(fromPoint.mainRay.dir));
 			continue;
 		}
-		Color intensity = fromPointInfo.node->GetMaterial()->Shade(fromPoint, fromPointInfo, lights, bounceCount, directType, indirectType);
+		Color intensity = fromPointInfo.node->GetMaterial()->Shade(fromPoint, fromPointInfo, lights, bounceCount, statistics, directType, indirectType);
 		cyPoint3f ldir = (fromPointInfo.p - hInfo.p).GetNormalized();
 
 		/* Geometry term */
@@ -370,7 +253,7 @@ Color MtlBlinn::ShadeIndirectPathTracing(const Rays &rays, const HitInfo &hInfo,
 #endif
 }
 
-Color MtlBlinn::ShadeReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &fkr, Color absorped, IlluminationType directType, IlluminationType indirectType) const {
+Color MtlBlinn::ShadeReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &fkr, Color absorped, PixelStatistics &statistics, IlluminationType directType, IlluminationType indirectType) const {
 	/* If the material has no reflection, return black */
 	if (bounceCount <= 0 || (reflection.GetColor() == cyColorA::Black() && fkr <= 0)) 	
 		return cyColor::Black();
@@ -396,10 +279,10 @@ Color MtlBlinn::ShadeReflection(const Rays &rays, const HitInfo &hInfo, const Li
 
 	/* Sample the reflective material */
 	const Material *hitMat = reflInfo.node->GetMaterial();
-	return hitMat->Shade(reflRays, reflInfo, lights, bounceCount, directType, indirectType) * Color(temp);
+	return hitMat->Shade(reflRays, reflInfo, lights, bounceCount, statistics, directType, indirectType) * Color(temp);
 }
 
-Color MtlBlinn::ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &fkr, Color absorped, IlluminationType directType, IlluminationType indirectType) const {
+Color MtlBlinn::ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, float &fkr, Color absorped, PixelStatistics &statistics, IlluminationType directType, IlluminationType indirectType) const {
 	Color refrCol = Color::Black();
 
 	/* If the material has refraction */
@@ -425,10 +308,10 @@ Color MtlBlinn::ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const Li
 #if USE_RAY_DIFFERENTIALS
 				Color finalRefr = (internallyReflected) ? Color::Black() : Color((refraction.Sample(refrInfo.uvw, refrInfo.duvw) - fkr) * ColorA(absorped));
 #else
-				Color finalRefr = (internallyReflected) ? Color::Black() : Color((refraction.Sample(refrInfo.uvw) - fkr) * ColorA(absorped));
+				Color finalRefr = (internallyReflected) ? Color::Black() : Color((refraction.Sample(refrInfo.uvw)/* - fkr*/) * ColorA(absorped));
 #endif
 				finalRefr.r = MAX(finalRefr.r, 0); finalRefr.g = MAX(finalRefr.g, 0); finalRefr.b = MAX(finalRefr.b, 0);
-				refrCol += hitMat->Shade(refrRays, refrInfo, lights, bounceCount, directType, indirectType) * finalRefr;
+				refrCol += hitMat->Shade(refrRays, refrInfo, lights, bounceCount, statistics, directType, indirectType) * finalRefr;
 			}
 
 			/* Else sample from the environment map */
@@ -445,26 +328,50 @@ Color MtlBlinn::ShadeRefraction(const Rays &rays, const HitInfo &hInfo, const Li
 	return refrCol;
 }
 
-Color MtlBlinn::ShadeIndirectPhotonMapping(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const {
+Color MtlBlinn::ShadeIndirectPhotonMapping(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics) const {
 	Color photon_col = Color::Black();
 	if (USE_PHOTON_MAPPING) {
-		cyPoint3f direction;
-		Color illumination;
-		photonMap->EstimateIrradiance<MAX_PHOTON_SAMPLES>(illumination, direction, PHOTON_SPHERE_RADIUS, hInfo.p);
 
-		cyPoint3f ldir = direction;
-		float dot = (hInfo.N.GetNormalized() % ldir.GetNormalized());
+		if (ContainsDiffuse()) {
+			ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
+			ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
 
-		ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(hInfo.uvw, hInfo.duvw) : diffuse.Sample(hInfo.uvw);
-		ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(hInfo.uvw, hInfo.duvw) : specular.Sample(hInfo.uvw);
+			if (USE_SPPM) {
+				/* Saving photon color elsewhere for post normalization*/
+				Color photon_col = Color::Black();
+				statistics.totalHits++;
+				cyPoint3f direction;
+				Color tm = Color::Black();
+				int nx = statistics.SharedLocalPhotonCount; int mx = 0;
+				photonMap->EstimateProgressiveIrradiance<MAX_PHOTON_SAMPLES>(tm, direction, statistics.R, nx, mx, hInfo.p);
+				direction.Normalize();
+				if (mx > 0) {
+					statistics.additionalPhotons += mx;
+					statistics.additionalFlux += tm;
+				}
+				photon_col = ((statistics.SharedLocalPhotonCount == 0) ? tm : statistics.totalFlux) * Color(dMat);
 
-		cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
-		photon_col = Color(ColorA(illumination) * (dMat + sMat * pow(hInfo.N % H, glossiness)));
+				float area = (float)M_PI*statistics.R*statistics.R;
+				photon_col = (photon_col * PHOTON_SCALE) / (statistics.totalPhotons * area);
+				statistics.additionalIndirectContribution += photon_col;
+			}
+			else {
+				cyPoint3f direction;
+				Color illumination;
+				photonMap->EstimateIrradiance<MAX_PHOTON_SAMPLES>(illumination, direction, PHOTON_SPHERE_RADIUS, hInfo.p);
+
+				cyPoint3f ldir = direction;
+				float dot = (hInfo.N.GetNormalized() % ldir.GetNormalized());
+
+				cyPoint3f H = ((ldir + -rays.mainRay.dir) / (ldir + -rays.mainRay.dir).Length()).GetNormalized();
+				photon_col = Color(ColorA(illumination) * (dMat + sMat * pow(hInfo.N % H, glossiness)));
+			}
+		}
 	}
 	return photon_col;
 }
 
-Color MtlBlinn::ShadeCausticRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const {
+Color MtlBlinn::ShadeCausticRefraction(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics) const {
 	Color refr_photon_col = Color::Black();
 	if (USE_CAUSTIC_REFRACTIONS) {
 		cyPoint3f direction;
@@ -482,7 +389,7 @@ Color MtlBlinn::ShadeCausticRefraction(const Rays &rays, const HitInfo &hInfo, c
 	return refr_photon_col;
 }
 
-Color MtlBlinn::ShadeCausticReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount) const {
+Color MtlBlinn::ShadeCausticReflection(const Rays &rays, const HitInfo &hInfo, const LightList &lights, int bounceCount, PixelStatistics &statistics) const {
 	Color refl_photon_col = Color::Black();
 	if (USE_CAUSTIC_REFLECTIONS) {
 		cyPoint3f direction;
@@ -501,7 +408,7 @@ Color MtlBlinn::ShadeCausticReflection(const Rays &rays, const HitInfo &hInfo, c
 }
 
 Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &lights, 
-	int bounceCount, IlluminationType directType, IlluminationType indirectType) const
+	int bounceCount, PixelStatistics &statistics, IlluminationType directType, IlluminationType indirectType) const
 {
 	if (bounceCount <= 0) return Color::Black();
 
@@ -515,24 +422,79 @@ Color MtlBlinn::Shade(const Rays &rays, const HitInfo &hInfo, const LightList &l
 	bounceCount--;
 
 	/* L(x, wo) = Lemmitted(x, wo) + integral( fs(wi, wo) * L(x', wi) * (N dot wi) * V(x, x') dwi ) */
-	refractionColor = ShadeRefraction(rays, hInfo, lights, bounceCount, frenselkr, absorped, directType, indirectType);
-	reflectionColor = ShadeReflection(rays, hInfo, lights, bounceCount, frenselkr, absorped, directType, indirectType);
+	refractionColor = ShadeRefraction(rays, hInfo, lights, bounceCount, frenselkr, absorped, statistics, directType, indirectType);
+	reflectionColor = ShadeReflection(rays, hInfo, lights, bounceCount, frenselkr, absorped, statistics, directType, indirectType);
 
 	if (directType == PATH_TRACING)
-		directColor = ShadeDirect(rays, hInfo, lights, bounceCount, directType, indirectType);
+		directColor = ShadeDirect(rays, hInfo, lights, bounceCount, statistics, directType, indirectType);
 
 	if (indirectType != NO_ILLUMINATION) {
 		if (indirectType == PATH_TRACING || (TOTAL_BOUNCES - bounceCount < INITIAL_PATH_TRACES))
 			//(USE_PHOTON_MAPPING && bounceCount == TOTAL_BOUNCES && INDIRECT_SAMPLES != 0) || !USE_PHOTON_MAPPING)
-			indirectColor = ShadeIndirectPathTracing(rays, hInfo, lights, bounceCount, directType, indirectType);
+			indirectColor = ShadeIndirectPathTracing(rays, hInfo, lights, bounceCount, statistics, directType, indirectType);
 		else if (indirectType == PHOTON) {
-			indirectColor = ShadeIndirectPhotonMapping(rays, hInfo, lights, bounceCount);
-			indirectColor += ShadeCausticReflection(rays, hInfo, lights, bounceCount);
-			indirectColor += ShadeCausticRefraction(rays, hInfo, lights, bounceCount);
+			indirectColor = ShadeIndirectPhotonMapping(rays, hInfo, lights, bounceCount, statistics);
+			//indirectColor += ShadeCausticReflection(rays, hInfo, lights, bounceCount, statistics);
+			//indirectColor += ShadeCausticRefraction(rays, hInfo, lights, bounceCount, statistics);
 		}
 	}
 	
 	return (directColor + indirectColor + reflectionColor + refractionColor);
+}
+
+Color MtlBlinn::ShadePoint(HitInfo &info, PixelStatistics &stats) const {
+	ColorA dMat = (USE_RAY_DIFFERENTIALS) ? diffuse.Sample(info.uvw, info.duvw) : diffuse.Sample(info.uvw);
+	ColorA sMat = (USE_RAY_DIFFERENTIALS) ? specular.Sample(info.uvw, info.duvw) : specular.Sample(info.uvw);
+	
+	Color photon_col = Color::Black(), illumination;
+	/*if (USE_PHOTON_MAPPING) {
+		cyPoint3f direction;
+		Color tm = Color::Black();
+		int nx = stats.SharedLocalPhotonCount; int mx = 0;
+		photonMap->EstimateProgressiveIrradiance<MAX_PHOTON_SAMPLES>(tm, direction, stats.R, nx, mx, info.p);
+		direction.Normalize();
+		if (mx > 0) {
+			stats.additionalPhotons += mx;
+			stats.additionalFlux += tm;
+		}
+		photon_col = ((stats.SharedLocalPhotonCount == 0) ? tm : stats.totalFlux) * Color(dMat);
+	}
+
+	float area = (float)M_PI*stats.R*stats.R;
+	photon_col = (photon_col * PHOTON_SCALE) / (stats.totalPhotons * area);*/
+	
+	stats.additionalIndirectContribution += photon_col;
+
+	///////////////////////////////////////////
+
+	Color directCol = cyColor::Black();
+
+	/* For each direct light in the scene */
+	for (int i = 0; i < lights.size(); i++) {
+		Light *l = lights.at(i);
+
+		/* Try to illuminate this point using the light */
+		Color li = l->Illuminate(info.p, info.N, info.tid);
+
+		/* Always add ambient, although with photon mapping this shouldn't be a thing */
+		if (l->IsAmbient()) {
+			directCol += Color(dMat * ColorA(li));
+		}
+		else {
+			/* Do Blinn */
+			cyPoint3f ldir = -l->Direction(info.p);
+			float dot = (info.N.GetNormalized() % ldir);
+
+			/* If surface is facing the light */
+			if (dot > 0 && !isnan(dot)) {
+				cyPoint3f H = ((ldir + -info.d) / (ldir + -info.d).Length()).GetNormalized();
+				directCol += Color(ColorA(li) * dot * (dMat + (sMat * pow(info.N % H, glossiness))));
+			}
+		}
+	}
+	stats.additionalDirectContribution += directCol * info.pointInfluence;
+
+	return (directCol + photon_col) * (info.pointInfluence);
 }
 
 bool MtlBlinn::isTransparent(const HitInfo &hInfo) const {
@@ -552,9 +514,10 @@ std::mutex photonMutex;
 
 // if this method returns true, a new photon with the given direction and color will be traced
 bool MtlBlinn::BouncePhoton(BounceInfo &bInfo, const HitInfo &hInfo) const {
+	Color absorped = getAbsorption(hInfo, bInfo.ray, absorption);
+
 	/* Assume for now we're not recording a photon */
 	bInfo.photonRecorded = false;
-
 	/* Kill off dark photons */
 	if (bInfo.power.Gray() < .001) return false;
 
@@ -575,16 +538,19 @@ bool MtlBlinn::BouncePhoton(BounceInfo &bInfo, const HitInfo &hInfo) const {
 		/* If we're GI and either this isn't the first bounce or we're saving direct light, 
 		OR we're CAUSTIC REFRACTIONS and the last ray was refractive
 		OR we're CAUSTIC REFLECTIONS and the last ray was reflective
-		*/
-		if ( (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::DIFFUSE || (bInfo.bounceType == BounceType::NONE && SAVE_DIRECT_PHOTON))
-			|| (bInfo.mapType == MapType::CAUSTIC_REFRACTIONS && bInfo.bounceType == BounceType::REFRACTIVE)
-			|| (bInfo.mapType == MapType::CAUSTIC_REFLECTIONS && bInfo.bounceType == BounceType::REFLECTIVE)) {
+		*/ // I BROKE THIS! FIX IT
+		if ( (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && (bInfo.bounceType == BounceType::DIFFUSE || bInfo.bounceType == BounceType::NONE) )
+			|| (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::REFRACTIVE)
+			|| (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::REFLECTIVE)) {
 			photonMutex.lock();
-			bInfo.map->AddPhoton(hInfo.p, (bInfo.ray.p - hInfo.p).GetNormalized(), bInfo.power);
+			if (SAVE_DIRECT_PHOTON || bInfo.directHit == true) {
+				bInfo.map->AddPhoton(hInfo.p, (bInfo.ray.p - hInfo.p).GetNormalized(), bInfo.power);
+				bInfo.photonRecorded = true;
+			}
+			bInfo.directHit = true;
 			photonMutex.unlock();
-			bInfo.photonRecorded = true;
+			
 		}
-
 		bInfo.power = (bInfo.power * diff) / pd;
 		bInfo.ray.p = hInfo.p;
 		int idx = haltonIDX[hInfo.tid].PMidx();
@@ -602,7 +568,7 @@ bool MtlBlinn::BouncePhoton(BounceInfo &bInfo, const HitInfo &hInfo) const {
 	/* REFRACTIVE */
 	else if (/*r >= ps + pd && */r < ps + pd + pr) {
 		bool internRefl;
-		bInfo.power = (bInfo.power * refr) / pr;
+		bInfo.power = (bInfo.power * refr * absorped) / pr;
 		bInfo.ray = refract(bInfo.ray, hInfo.N, hInfo.p, ior, hInfo.front, internRefl);
 		bInfo.bounceType = BounceType::REFRACTIVE;
 		return true;
@@ -610,5 +576,67 @@ bool MtlBlinn::BouncePhoton(BounceInfo &bInfo, const HitInfo &hInfo) const {
 	else {
 		bInfo.bounceType = BounceType::ABSORPED;
 		return false;
+	}
+}
+
+bool MtlBlinn::containsNonspecular() const {
+	if (Color(diffuse.GetColor()) != Color::Black()) return true;
+}
+
+void MtlBlinn::GetDiffuseHits(std::vector<HitInfo>& hits, Ray ray, HitInfo hInfo, int bounceCount) const
+{
+	if (bounceCount <= 0) return;
+	bounceCount--;
+
+	if (ContainsDiffuse()) {
+		if (isTransparent(hInfo)) {
+			HitInfo info = HitInfo(hInfo.tid);
+			Ray newRay = Ray(ray, info.z);
+			bool hit = Trace(newRay, rootNode, info, HIT_FRONT_AND_BACK);
+			info.pointInfluence = hInfo.pointInfluence;
+			if (hit) info.node->GetMaterial()->GetDiffuseHits(hits, newRay, info, bounceCount);
+		}
+		else {
+			hInfo.p0 = ray.p;
+			hits.push_back(hInfo);
+		}
+	}
+	Color absorped = getAbsorption(hInfo, ray, absorption);
+	
+	float fkr;
+	if (ContainsRefraction()) {
+		HitInfo refrinfo = HitInfo(hInfo.tid);
+		Ray refrRay;
+		bool refrhit = TraceRefraction(ray, refrRay, hInfo, refrinfo, fkr);
+		refrinfo.pointInfluence = hInfo.pointInfluence;
+
+		HitInfo reflinfo = HitInfo(hInfo.tid);
+		Ray reflRay;
+		bool reflhit = TraceReflection(ray, reflRay, hInfo, reflinfo, HIT_FRONT_AND_BACK);
+		reflinfo.pointInfluence = hInfo.pointInfluence;
+
+
+		refrinfo.pointInfluence *= Color(refraction.Sample(hInfo.uvw) - fkr) * absorped;
+		reflinfo.pointInfluence *= (Color(reflection.Sample(hInfo.uvw)) + fkr);
+		if (!hInfo.front) reflinfo.pointInfluence *= absorped;
+		
+		if (refrhit) {
+			refrinfo.node->GetMaterial()->GetDiffuseHits(hits, refrRay, refrinfo, bounceCount);
+		}
+
+		if (reflhit) {
+			reflinfo.node->GetMaterial()->GetDiffuseHits(hits, reflRay, reflinfo, bounceCount);
+		}
+	}
+	else if (ContainsReflection()) {
+		HitInfo info = HitInfo(hInfo.tid);
+		Ray reflRay;
+		bool hit = TraceReflection(ray, reflRay, hInfo, info, HIT_FRONT_AND_BACK);
+		info.pointInfluence = hInfo.pointInfluence;
+		if (hit) {
+			//info.pointInfluence *= (Color(reflection.Sample(hInfo.uvw)));
+			if (info.pointInfluence.Gray() > .001)
+				info.node->GetMaterial()->GetDiffuseHits(hits, reflRay, info, bounceCount);
+		}
 	}
 }

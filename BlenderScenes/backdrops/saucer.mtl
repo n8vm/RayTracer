@@ -1,0 +1,12 @@
+# Blender MTL File: 'teacup-packed.blend'
+# Material Count: 1
+
+newmtl default
+Ns 98.039216
+Ka 1.000000 1.000000 1.000000
+Kd 0.666667 0.594286 0.515556
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2

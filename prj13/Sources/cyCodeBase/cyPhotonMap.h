@@ -76,7 +76,7 @@ public:
 	/// Allocates enough memory for n photons.
 	/// Calling this method before adding photons avoids 
 	/// multiple memory allocations while adding photons.
-	void AllocatePhotons( unsigned int n ) { photons.resize(n+1); }
+	void AllocatePhotons( unsigned int n ) { photons.reserve(n+1); }
 
 	/// Adds a photon to the map with the given position, direction, and power.
 	/// Assumes that the direction is normalized.
@@ -98,6 +98,14 @@ public:
 	template <int maxPhotons>
 	void EstimateIrradiance( Color &irrad, Point3f &direction, float radius, const Point3f &pos,
 		const Point3f *normal=NULL, float ellipticity=1, FilterType filterType=FILTER_TYPE_CONSTANT ) const;
+
+	template <int maxPhotons>
+	void EstimateProgressiveIrradiance(
+		Color &irrad, Point3f &direction,
+		float R,
+		int Nx, int &Mx,
+		const Point3f &pos, const Point3f *normal = NULL,
+		float ellipticity = 1, FilterType filterType = FILTER_TYPE_CONSTANT) const;
 
 	/// Returns the closest photon to the given position.
 	/// If no photon is found within the radius, returns false.
@@ -331,6 +339,50 @@ inline void PhotonMap::EstimateIrradiance(Color &irrad, Point3f &direction, floa
 			irrad *= one_over_area;
 		}
 		direction.Normalize();
+	}
+	//return np.found;
+}
+
+template <int maxPhotons>
+inline void PhotonMap::EstimateProgressiveIrradiance(
+	Color &irrad, Point3f &direction, 
+	float R,
+	int Nx, int &Mx,
+	const Point3f &pos, const Point3f *normal, 
+	float ellipticity, FilterType filterType) const
+{
+	irrad.SetBlack();
+	direction.Zero();
+
+	float found_dist2[maxPhotons + 1];
+	Photon found_photon[maxPhotons + 1];
+	NearestPhotons np;
+	np.pos = pos;
+	np.normal = normal;
+	np.normScale = ellipticity == 1 ? 0 : 1 / ellipticity - 1;
+	np.maxPhotons = maxPhotons;
+	np.found = 0;
+	np.dist2 = found_dist2;
+	np.photon = found_photon;
+	np.dist2[0] = R*R;
+
+	LocatePhotons(np, 1);
+
+	Mx = np.found;
+
+	// sum irradiance from all photons
+	for (int i = 1; i <= np.found; i++) {
+		Color power;
+		np.photon[i].GetPower(power);
+		float filter = 1;
+		switch (filterType) {
+		case FILTER_TYPE_LINEAR:    filter = 1 - sqrtf(np.dist2[i]) / sqrtf(np.dist2[0]); break;
+		case FILTER_TYPE_QUADRATIC: filter = 1 - np.dist2[i] / np.dist2[0]; break;
+		}
+		irrad += filter * power;
+		Point3f dir;
+		np.photon[i].GetDirection(dir);
+		direction += dir * (filter * np.photon[i].GetMaxPower());
 	}
 }
 

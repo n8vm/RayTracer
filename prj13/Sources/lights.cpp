@@ -3,6 +3,7 @@
 #include "options.h"
 #include <time.h>
 #include "cyCodeBase/cyMatrix.h"
+#include "trace.h"
 
 extern Node rootNode;
 extern LightList lights;
@@ -74,6 +75,8 @@ Color PointLight::Illuminate(const Point3 &p, const Point3 &N, int tid) const {
 
 /* Note, does not take size into account. */
 Ray PointLight::GenerateRandomPhoton(int tid) const {
+	//std::cout << rand() << std::endl;
+
 	double theta = 2 * M_PI * (rand() / (float)RAND_MAX);
 	double phi = acos(1 - 2 * (rand() / (float)RAND_MAX));
 	

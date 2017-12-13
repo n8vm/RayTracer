@@ -5,6 +5,9 @@
 #include "scene.h"
 #include "lights.h"
 #include "materials.h"
+#include "trace.h"
+#include "morton.h"
+#include <time.h>
 
 extern Camera camera;
 extern RenderImage renderImage;
@@ -21,11 +24,13 @@ cy::PhotonMap *reflectionMap;
 HaltonIDX haltonIDX[TOTAL_THREADS] = {};
 
 std::thread *renderThread;
+std::atomic_int recordedPhotons;
 std::atomic_int pixelsDone;
 std::mutex g_display_mutex;
 static std::vector<std::thread> threads;
+std::atomic_bool rendering;
 
-/* CAMERA STUFF */
+/* CAMERA CODE */
 CommonRayInfo getCommonCameraRayInfo() {
 	CommonRayInfo cri;
 	cri.startPos = camera.pos;
@@ -67,7 +72,6 @@ Rays getCameraRays(float x, float y, float ddx, float ddy, float dpx, float dpy,
 	rays.dify = getCameraRay(x, y, ddx, ddy + .5 * RECONSTRUCTION_FILTER_SIZE, dpx, dpy, cri);
 	return rays;
 }
-
 uint32_t calcZOrder(uint16_t xPos, uint16_t yPos)
 {
 	static const uint32_t MASKS[] = { 0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF };
@@ -89,8 +93,27 @@ uint32_t calcZOrder(uint16_t xPos, uint16_t yPos)
 	const uint32_t result = x | (y << 1);
 	return result;
 }
+int getZPixel(int pixelIdx, int numLevels, int &x, int &y) {
+	int zIdx = flipLevels(pixelIdx, numLevels);
+	int currentLevel = log2(zIdx);
+	x = DecodeMorton2X(zIdx);
+	y = DecodeMorton2Y(zIdx);
+	return zIdx;
+}
+void getPixel(int pixelIdx, int width, int &x, int &y) {
+	x = pixelIdx % width;
+	y = pixelIdx / width;
+}
 
-/* RENDER */
+
+/* GENERAL RENDER */
+int sppmItteration = 1;
+std::vector<std::vector<HitInfo>> hitPoints;
+std::mutex hitPointMutex;
+
+int debug = 0;
+std::vector<PixelStatistics> sharedStatistics;
+
 void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, float &depth, cyPoint3f &normal, IlluminationType directType, IlluminationType indirectType) {
 	float maxVariance = 0;
 	const CommonRayInfo cri = getCommonCameraRayInfo(); // FIX THIS
@@ -102,8 +125,12 @@ void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, flo
 	Color avg2 = Color::Black();
 	totalSamples = MIN_SAMPLES;
 
+
+	PixelStatistics &statistics = sharedStatistics[x + width * y];
+
+
 	/* For each sample being taken of this pixel */
-	for (int i = 1; i <= totalSamples; i++) {
+	for (int i = 1; i <= /*(USE_SPPM) ? 1 :*/ totalSamples; i++) {
 		/* Determine the ray direction's random shift relative to the center of the pixel */
 		int aaIdx = haltonIDX[tid].AAidx();
 		float ddx = Halton(aaIdx, 2) * RECONSTRUCTION_FILTER_SIZE - (RECONSTRUCTION_FILTER_SIZE * 0.5);
@@ -130,7 +157,19 @@ void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, flo
 			const Material *hitMat = info.node->GetMaterial();
 			normal = info.N;
 			if (SHOW_NORMALS) { sampleColor.r = (info.N.x + 1.0f); sampleColor.g = (info.N.y + 1.0f); sampleColor.b = (info.N.z + 1.0f); }
-			else sampleColor = hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, directType, indirectType);
+			else if (USE_SPPM) {
+				statistics.totalPhotons = sppmItteration * TOTAL_PHOTONS;
+				sampleColor = hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, statistics, IlluminationType::PATH_TRACING, IlluminationType::PHOTON);
+				//if (statistics.itteration == 1)
+				//	statistics.totalFlux /= (float)statistics.totalHits;
+				statistics.additionalFlux /= (float)statistics.totalHits;
+				statistics.Update();
+				if (statistics.totalHits != 0)
+					sampleColor += (statistics.indirectContribution / (float)statistics.totalHits);
+				statistics.totalHits = 0;
+			}
+			else sampleColor = hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, statistics, directType, indirectType);
+			//statistics.Update();
 		}
 		/* Otherwise sample from the background */
 		else {
@@ -161,92 +200,24 @@ void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, flo
 		totalSamples = MIN_SAMPLES + (MAX_SAMPLES - MIN_SAMPLES) * temp;
 	}
 }
-
-// Inverse of Part1By1 - "delete" all odd-indexed bits
-uint32_t Compact1By1(uint32_t x)
-{
-	x &= 0x55555555;                  // x = -f-e -d-c -b-a -9-8 -7-6 -5-4 -3-2 -1-0
-	x = (x ^ (x >> 1)) & 0x33333333; // x = --fe --dc --ba --98 --76 --54 --32 --10
-	x = (x ^ (x >> 2)) & 0x0f0f0f0f; // x = ---- fedc ---- ba98 ---- 7654 ---- 3210
-	x = (x ^ (x >> 4)) & 0x00ff00ff; // x = ---- ---- fedc ba98 ---- ---- 7654 3210
-	x = (x ^ (x >> 8)) & 0x0000ffff; // x = ---- ---- ---- ---- fedc ba98 7654 3210
-	return x;
-}
-
-uint32_t DecodeMorton2X(uint32_t code)
-{
-	return Compact1By1(code >> 0);
-}
-
-uint32_t DecodeMorton2Y(uint32_t code)
-{
-	return Compact1By1(code >> 1);
-}
-
-unsigned int nextPow2(unsigned int v) {
-	v--;
-	v |= v >> 1;
-	v |= v >> 2;
-	v |= v >> 4;
-	v |= v >> 8;
-	v |= v >> 16;
-	v++;
-	return v;
-}
-
-unsigned int log2(int in) {
-	int i = 0; 
-	while (in) {
-		++i;
-		in /= 2;
-	}
-	return i;
-}
-
-uint32_t flipLevels(int z, int levels) {
-	int newZ = 0;
-	int mask;
-
-	for (int i = 0; i < levels; ++i) {
-		int mask = 3;
-		mask <<= (i * 2);
-		int quadrent = (mask & z) >> (i * 2);
-		newZ |= (quadrent << ((levels - i - 2)) * 2);
-	}
-	return newZ;
-}
-
-int getLevel(int z, int levels) {
-	int i;
-	for (i = 0; i < levels; ++i) {
-		int mask = 3;
-		mask <<= (i * 2);
-		int quadrant = (mask & z) >> (i * 2);
-		if (quadrant != 0) break;
-	}
-	return levels - i;
-}
-
-void render_internal(int tid) {
+void render_internal(int tid, bool fillEmpty = true) {
 	const int width = renderImage.GetWidth();
 	const int height = renderImage.GetHeight();
 	int widthPow2 = nextPow2(width);
 	int heightPow2 = nextPow2(height);
 
 	int levels = log2(widthPow2);
-		
+
 	int renderHeight = (RENDER_SUBIMAGE) ? YEND - YSTART : height;
-	haltonIDX[tid] = HaltonIDX();
+	//haltonIDX[tid] = HaltonIDX(); // Now done outside this function
 
 	/* While there are pixels to render */
 	while (pixelsDone < widthPow2 * heightPow2) {
 
 		/* Get pixel location*/
 		int pixel = std::atomic_fetch_add(&pixelsDone, 1);
-		int zIdx = flipLevels(pixel, levels);
-		int currentLevel = log2(zIdx);
-		int x = DecodeMorton2X(zIdx);
-		int y = DecodeMorton2Y(zIdx);
+		int x, y;
+		int zIdx = getZPixel(pixel, levels, x, y);
 		if (x >= width || y >= height) continue;
 
 		/* If we're not rendering this portion of the image, continue. */
@@ -270,25 +241,30 @@ void render_internal(int tid) {
 #endif
 
 		/* Do gamma correction */
-		Color24 correctedColor = Color24(avgColor);
-		correctedColor.r = 255.0 * powf((correctedColor.r / 255.0), (1.0 / GAMMA));
-		correctedColor.g = 255.0 * powf((correctedColor.g / 255.0), (1.0 / GAMMA));
-		correctedColor.b = 255.0 * powf((correctedColor.b / 255.0), (1.0 / GAMMA));
+		Color correctedColor;
+		correctedColor.r = powf((avgColor.r), (1.0 / GAMMA));
+		correctedColor.g = powf((avgColor.g), (1.0 / GAMMA));
+		correctedColor.b = powf((avgColor.b), (1.0 / GAMMA));
 
 		int pixelsPerDim = pow(2, levels - getLevel(zIdx, levels));
+		
 		/* Write data to image */
-		for (int yi = y; yi < y + pixelsPerDim; ++yi) {
-			if (yi >= height) continue;
-			for (int xi = x; xi < x + pixelsPerDim; ++xi) {
-				if (xi >= width) continue;
-				renderImage.GetPixels()[xi + yi*width] = correctedColor;
+		if (fillEmpty)
+			for (int yi = y; yi < y + pixelsPerDim; ++yi) {
+				if (yi >= height) continue;
+				for (int xi = x; xi < x + pixelsPerDim; ++xi) {
+					if (xi >= width) continue;
+					renderImage.GetPixels()[xi + yi*width] = Color24(correctedColor);
+				}
 			}
-		}
+		else renderImage.GetPixels()[x + y*width] = Color24(correctedColor);
 
 		renderImage.GetZBuffer()[x + y*width] = depth;
 		renderImage.GetSampleCount()[x + y*width] = ((totalSamples - MIN_SAMPLES) / (float)(MAX_SAMPLES - MIN_SAMPLES)) * 256;
-		renderImage.IncrementNumRenderPixel(1);
-
+		
+		if (pixel != 0)
+			renderImage.IncrementNumRenderPixel(1);
+		
 		/* Progress report */
 		if ((pixelsDone % 10) == 0) {
 			g_display_mutex.lock();
@@ -296,9 +272,11 @@ void render_internal(int tid) {
 			g_display_mutex.unlock();
 		}
 	}
+	renderImage.ResetNumRenderedPixels();
 
 }
 
+/* IRRADIANCE CACHING */
 void computeIrradiance(int tid) {
 	g_display_mutex.lock();
 	std::cout << "tid " << tid << " computing irradiance map" << std::endl;
@@ -306,7 +284,7 @@ void computeIrradiance(int tid) {
 	while (irradianceMap->ComputeNextPoint(tid));
 }
 
-std::atomic_int recordedPhotons;
+/* PHOTON MAPPING */
 void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, MapType mapType, std::string consoleKey) {
 	using namespace std;
 	recordedPhotons = 0;
@@ -328,7 +306,7 @@ void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, 
 	for (int l = 0; l < photonLights.size(); ++l) {
 		probabilities.push_back(intensities[l] / prefixSum[prefixSum.size() - 1]);
 	}
-
+	srand(time(NULL));
 	while (recordedPhotons < totalPhotons) {
 		/* Create a random number between 0 and the sum of all intensities.*/
 		float r = (rand() / (float)(RAND_MAX)) * prefixSum.at(prefixSum.size() - 1);
@@ -339,9 +317,9 @@ void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, 
 			++lightIdx;
 
 		/* Create an initial photon */
-
+		debug = 1;
 		BounceInfo bInfo;
-		bInfo.ray = photonLights[lightIdx]->GenerateRandomPhoton(0);
+		bInfo.ray = photonLights[lightIdx]->GenerateRandomPhoton(tid);
 		bInfo.power = photonLights[lightIdx]->GetPhotonIntensity() / probabilities[lightIdx];
 		bInfo.bounceType = BounceType::NONE;
 		bInfo.mapType = mapType;
@@ -349,8 +327,12 @@ void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, 
 
 		/* Trace that photon */
 		for (bInfo.bounceIdx = 0; bInfo.bounceIdx < PHOTON_BOUNCES; ++bInfo.bounceIdx) {
-			HitInfo hitInfo = HitInfo(0);
-			bool hit = Trace(bInfo.ray, rootNode, hitInfo, HIT_FRONT_AND_BACK);
+			HitInfo hitInfo = HitInfo(tid);
+			bool hit = Trace(bInfo.ray, rootNode, hitInfo, HIT_FRONT_AND_BACK, BIGFLOAT);
+
+			//std::cout << "ray " << bInfo.ray.p.x << " " << bInfo.ray.p.y << " " << bInfo.ray.p.z << " " << std::endl;
+		//	std::cout << "ray " << bInfo.ray.dir.x << " " << bInfo.ray.dir.y << " " << bInfo.ray.dir.z << " " << std::endl;
+		//	std::cout << "hit " << hit << std::endl;
 
 			/* If our photon flew away, get a new one. */
 			if (!hit) break;
@@ -360,12 +342,14 @@ void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, 
 			if (bInfo.photonRecorded) recordedPhotons++;
 			if (!bounced) break;
 		}
-		if (tid == 0 && recordedPhotons % 1000 == 0) std::cout << "\r" << consoleKey << ": " << 100.0 * recordedPhotons / (float)totalPhotons << " percent done    ";
+		if (tid == 0 && recordedPhotons % 1000 == 0) std::cout << "\r" << consoleKey << ": " << recordedPhotons<<" / " << totalPhotons << " percent done    ";
 	}
 
 	if (tid == 0) {
 		std::cout << std::endl;
-		map->ScalePhotonPowers(scale / (float) totalPhotons);
+#if !USE_SPPM
+		map->ScalePhotonPowers(scale / (float)totalPhotons);
+#endif
 		if (mapType == MapType::GLOBAL_ILLUMINATION) {
 			FILE *fp = fopen("photonmap.dat", "wb");
 			fwrite(photonMap->GetPhotons(), sizeof(cyPhotonMap::Photon), photonMap->NumPhotons(), fp);
@@ -385,7 +369,6 @@ void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, 
 		}
 	}
 }
-
 int readPhotonMap(std::string fname, cy::PhotonMap *map) {
 	int numPhotons = 0;
 	/////////////////////////////////////////////////////////////////////////////////
@@ -422,84 +405,258 @@ int readPhotonMap(std::string fname, cy::PhotonMap *map) {
 	map->PrepareForIrradianceEstimation();
 
 }
+void renderPhotons(int tid) {
+	const int width = renderImage.GetWidth();
+	const int height = renderImage.GetHeight();
+	int width2 = nextPow2(width);
+	int height2 = nextPow2(height);
+	int levels = log2(width2);
 
-void safeDelete(void **ptr) {
-	if (ptr != NULL) delete(ptr);
-	ptr = NULL;
+	while (pixelsDone < width2 * height2) {
+		int idx = std::atomic_fetch_add(&pixelsDone, 1);
+		int x, y;
+		int zIdx = getZPixel(idx, levels, x, y);
+		if (x >= width || y >= height) continue;
+
+		std::vector<HitInfo> &pixelHitPts = hitPoints.at(x + y*width);
+		PixelStatistics &stats = sharedStatistics[x + y * width];
+
+
+
+		for (int i = 0; i < pixelHitPts.size(); ++i) {
+			HitInfo &info = pixelHitPts[i];
+			stats.totalPhotons = sppmItteration * TOTAL_PHOTONS;
+			info.node->GetMaterial()->ShadePoint(info, stats);
+		}
+		if (stats.itteration == 1)
+			stats.totalFlux /= pixelHitPts.size();
+		stats.additionalFlux /= pixelHitPts.size();
+		stats.Update();
+
+		Color correctedColor = stats.directContribution + (stats.indirectContribution / (float) pixelHitPts.size());
+		correctedColor.r = powf(correctedColor.r, (1.0 / GAMMA));
+		correctedColor.g = powf(correctedColor.g, (1.0 / GAMMA));
+		correctedColor.b = powf(correctedColor.b, (1.0 / GAMMA));
+		//pixelColor *= stats.px_weight;
+		//pixelColor *= (float)PHOTON_ALPHA;
+
+		if (sppmItteration == 1) {
+			int pixelsPerDim = pow(2, levels - getLevel(zIdx, levels));
+			/* Write data to image */
+			for (int yi = y; yi < y + pixelsPerDim; ++yi) {
+				if (yi >= height) continue;
+				for (int xi = x; xi < x + pixelsPerDim; ++xi) {
+					if (xi >= width) continue;
+					renderImage.GetPixels()[xi + yi*width] = Color24(correctedColor);
+				}
+			}
+		}
+		else 
+			renderImage.GetPixels()[stats.x + stats.y*width] = Color24(correctedColor);
+		if (idx != 0)
+			renderImage.IncrementNumRenderPixel(1);
+	}
+	renderImage.ResetNumRenderedPixels();
+}
+std::vector<HitInfo> getPixelDiffuseHits(int tid, int x, int y, int numSamples, IlluminationType directType, IlluminationType indirectType) {
+	std::vector<HitInfo> localHitPoints;
+	const CommonRayInfo cri = getCommonCameraRayInfo();
+	const int width = renderImage.GetWidth();
+	const int height = renderImage.GetHeight();
+	
+	for (int i = 0; i < numSamples; ++i) {
+
+		/* Determine the ray direction's random shift relative to the center of the pixel */
+		int aaIdx = haltonIDX[tid].AAidx();
+		float ddx = Halton(sppmItteration + ((x * y) % 1024), 7) * (RECONSTRUCTION_FILTER_SIZE - (RECONSTRUCTION_FILTER_SIZE * 0.5));
+		float ddy = Halton(sppmItteration + ((x * y) % 1024), 5) * (RECONSTRUCTION_FILTER_SIZE - (RECONSTRUCTION_FILTER_SIZE * 0.5));
+		
+		
+		if (x == PICKED_X && y == PICKED_Y)
+ 			std::cout << "itteration: " << sppmItteration << std::endl;
+
+		/* Determine the ray point's random shift relative to the eye (a disk modeling a lense) */
+		int dofIdx = haltonIDX[tid].DOFidx();
+		float t = 2 * M_PI*Halton(dofIdx, 2);
+		float u = Halton(dofIdx, 3) + Halton(dofIdx, 5);
+		float r = (u > 1.0) ? 2 - u : u;
+		float dpx = r*cos(t) * camera.dof;
+		float dpy = r*sin(t) * camera.dof;
+
+		/* Generate the ray */
+		Rays rays = getCameraRays(x, y, ddx, ddy, dpx, dpy, cri);
+
+		/* Shoot that ray into the scene */
+		HitInfo info = HitInfo(tid);
+		Color sampleColor = Color::Black();
+		bool hit = Trace(rays, rootNode, info, HIT_FRONT_AND_BACK, BIGFLOAT);
+
+
+		/* If we didn't hit anything at this point, we can return.*/
+		if (!hit) continue;
+
+		/* Get the diffuse hitpoints throughout the scene using the material. */
+		info.node->GetMaterial()->GetDiffuseHits(localHitPoints, rays.mainRay, info, TOTAL_BOUNCES);
+	}
+	return localHitPoints;
+}
+void getDiffuseHitPoints(int tid, bool initSharedStatistics = true, int numSamples = 1) {
+	const int width = renderImage.GetWidth(), height = renderImage.GetHeight();
+	int width2 = nextPow2(width), height2 = nextPow2(height);
+	int levels = log2(width2);
+
+	while (pixelsDone < width * height) {
+		/* Get the pixel */
+		int pixel = std::atomic_fetch_add(&pixelsDone, 1), x = 0, y = 0;
+		getPixel(pixel, width, x, y);
+		if (x >= width || y >= height) continue;
+
+		/* Get all non-specular hit points for that pixel */
+		std::vector<HitInfo> pixelHitPoints = getPixelDiffuseHits(tid, x, y, numSamples, DIRECT_TYPE, INDIRECT_TYPE);
+		
+		/* Add those hitpoints to the list. */
+		hitPoints[pixel] = pixelHitPoints;
+		if (initSharedStatistics) {
+			sharedStatistics[pixel].R = PHOTON_SPHERE_RADIUS;
+			sharedStatistics[pixel].totalFlux = Color::Black();
+			sharedStatistics[pixel].SharedLocalPhotonCount = 0;
+			sharedStatistics[pixel].x = x;
+			sharedStatistics[pixel].y = y;
+			sharedStatistics[pixel].px_weight = 1.0 / (float)numSamples;
+		}
+	}
+}
+void render_sppm() {
+	std::cout << "Beginning render" << std::endl;
+
+	rendering = true;
+
+	/* Initialize the image as black */
+	const int width = renderImage.GetWidth();
+	const int height = renderImage.GetHeight();
+	std::fill(renderImage.GetPixels(), renderImage.GetPixels() + (width * height & sizeof(Color24)), Color24::Black());
+
+	/* Reserve the shared statistics */
+	//hitPoints.resize(width*height);
+	sharedStatistics.resize(width*height);
+
+	for (int i = 0; i < TOTAL_THREADS; ++i) haltonIDX[i] = HaltonIDX();
+
+	while (rendering) {
+		/* Photon pass */
+		std::cout << "Pass " << sppmItteration << std::endl;
+		std::cout << "Photon Mapping " << sppmItteration << std::endl;
+		photonMap = new cyPhotonMap();
+		photonMap->AllocatePhotons(TOTAL_PHOTONS);
+		threads = std::vector<std::thread>(TOTAL_THREADS);
+		for (int i = 0; i < TOTAL_THREADS; ++i)
+			threads.at(i) = std::thread(initPhotonRays, i, photonMap, TOTAL_PHOTONS, PHOTON_SCALE, MapType::GLOBAL_ILLUMINATION, "Photon Map");
+		for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+		photonMap->PrepareForIrradianceEstimation();
+
+		/* Ray trace pass */
+		std::cout << "Ray Tracing " << sppmItteration << std::endl;
+		pixelsDone = 0;
+		threads = std::vector<std::thread>(TOTAL_THREADS);
+		for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i) = std::thread(render_internal, i, (sppmItteration == 1));
+		for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+
+		///* Update View */
+		//renderImage.ResetNumRenderedPixels();
+		//pixelsDone = 0;
+		//threads = std::vector<std::thread>(TOTAL_THREADS);
+		//for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i) = std::thread(renderPhotons, i);
+		//for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+
+		///* Distributed Ray Tracing Pass */
+		//pixelsDone = 0;
+		//threads = std::vector<std::thread>(TOTAL_THREADS);
+		//for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i) = std::thread(getDiffuseHitPoints, i, false, MAX_SAMPLES);
+		//for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+
+		sppmItteration++;
+		delete(photonMap);
+		renderImage.SaveImage("Image.png");
+	}
 }
 
-void render() {
+/* PATH TRACING */
+void render_pt() {
 	std::cout << "Beginning render" << std::endl;
 
 	renderImage.ResetNumRenderedPixels();
 	pixelsDone = 0;
 
-#if USE_PHOTON_MAPPING || USE_CAUSTIC_REFRACTIONS || USE_CAUSTIC_REFLECTIONS
-	photonMap = new cyPhotonMap();
-	reflectionMap = new cyPhotonMap();
-	refractionMap = new cyPhotonMap();
+	/* Reserve the shared statistics */
+	//hitPoints.resize(width*height);
 
-	if (USE_PHOTON_MAPPING && USE_CACHED_PHOTON_MAP) {
-		readPhotonMap("photonmap.dat", photonMap);
-		std::cout << "Photon Map: 100 percent" << std::endl;
-	}
-	else if (USE_PHOTON_MAPPING) {
-		photonMap->AllocatePhotons(TOTAL_PHOTONS);
 
-		threads = std::vector<std::thread>(TOTAL_THREADS);
-		for (int i = 0; i < TOTAL_THREADS; ++i) {
-			threads.at(i) = std::thread(initPhotonRays, i, photonMap, TOTAL_PHOTONS, PHOTON_SCALE, MapType::GLOBAL_ILLUMINATION, "Photon Map");
-		}
-
-		for (int i = 0; i < TOTAL_THREADS; ++i) {
-			threads.at(i).join();
-			threads.at(i).~thread();
-		}
-		std::cout << "Balancing Refractive Photon Map" << std::endl;
-		photonMap->PrepareForIrradianceEstimation();
-	}
-
-	if (USE_CAUSTIC_REFLECTIONS && USE_CACHED_REFLECTIONS) {
-		readPhotonMap("reflmap.dat", reflectionMap);
-		std::cout << "Reflection Map: 100 percent" << std::endl;
-	}
-	else if (USE_CAUSTIC_REFLECTIONS) {
-		reflectionMap->AllocatePhotons(TOTAL_PHOTONS);
-
-		threads = std::vector<std::thread>(TOTAL_THREADS);
-		for (int i = 0; i < TOTAL_THREADS; ++i) {
-			threads.at(i) = std::thread(initPhotonRays, i, reflectionMap, TOTAL_REFLECTION_PHOTONS, CAUSTIC_REFLECTION_SCALE, MapType::CAUSTIC_REFLECTIONS, "Reflection Map");
-		}
-
-		for (int i = 0; i < TOTAL_THREADS; ++i) {
-			threads.at(i).join();
-			threads.at(i).~thread();
-		}
-		std::cout << "Balancing Refractive Photon Map" << std::endl;
-		reflectionMap->PrepareForIrradianceEstimation();
-	}
-
-	if (USE_CAUSTIC_REFRACTIONS && USE_CACHED_REFRACTIONS) {
-		readPhotonMap("refrmap.dat", refractionMap);
-		std::cout << "Refraction Map: 100 percent" << std::endl;
-	}
-	else if (USE_CAUSTIC_REFRACTIONS) {
-		refractionMap->AllocatePhotons(TOTAL_PHOTONS);
-
-		threads = std::vector<std::thread>(TOTAL_THREADS);
-		for (int i = 0; i < TOTAL_THREADS; ++i) {
-			threads.at(i) = std::thread(initPhotonRays, i, refractionMap, TOTAL_REFRACTION_PHOTONS, CAUSTIC_REFRACTION_SCALE, MapType::CAUSTIC_REFRACTIONS, "Refraction Map");
-		}
-
-		for (int i = 0; i < TOTAL_THREADS; ++i) {
-			threads.at(i).join();
-			threads.at(i).~thread();
-		}
-		std::cout << "Balancing Refractive Photon Map" << std::endl;
-		refractionMap->PrepareForIrradianceEstimation();
-	}
-#endif
-
+//#if USE_PHOTON_MAPPING || USE_CAUSTIC_REFRACTIONS || USE_CAUSTIC_REFLECTIONS
+//	photonMap = new cyPhotonMap();
+//	reflectionMap = new cyPhotonMap();
+//	refractionMap = new cyPhotonMap();
+//
+//	if (USE_PHOTON_MAPPING && USE_CACHED_PHOTON_MAP) {
+//		readPhotonMap("photonmap.dat", photonMap);
+//		std::cout << "Photon Map: 100 percent" << std::endl;
+//	}
+//	else if (USE_PHOTON_MAPPING) {
+//		photonMap->AllocatePhotons(TOTAL_PHOTONS);
+//
+//		threads = std::vector<std::thread>(TOTAL_THREADS);
+//		for (int i = 0; i < TOTAL_THREADS; ++i) {
+//			threads.at(i) = std::thread(initPhotonRays, i, photonMap, TOTAL_PHOTONS, PHOTON_SCALE, MapType::GLOBAL_ILLUMINATION, "Photon Map");
+//		}
+//
+//		for (int i = 0; i < TOTAL_THREADS; ++i) {
+//			threads.at(i).join();
+//			threads.at(i).~thread();
+//		}
+//		std::cout << "Balancing Refractive Photon Map" << std::endl;
+//		photonMap->PrepareForIrradianceEstimation();
+//	}
+//
+//	if (USE_CAUSTIC_REFLECTIONS && USE_CACHED_REFLECTIONS) {
+//		readPhotonMap("reflmap.dat", reflectionMap);
+//		std::cout << "Reflection Map: 100 percent" << std::endl;
+//	}
+//	else if (USE_CAUSTIC_REFLECTIONS) {
+//		reflectionMap->AllocatePhotons(TOTAL_PHOTONS);
+//
+//		threads = std::vector<std::thread>(TOTAL_THREADS);
+//		for (int i = 0; i < TOTAL_THREADS; ++i) {
+//			threads.at(i) = std::thread(initPhotonRays, i, reflectionMap, TOTAL_REFLECTION_PHOTONS, CAUSTIC_REFLECTION_SCALE, MapType::CAUSTIC_REFLECTIONS, "Reflection Map");
+//		}
+//
+//		for (int i = 0; i < TOTAL_THREADS; ++i) {
+//			threads.at(i).join();
+//			threads.at(i).~thread();
+//		}
+//		std::cout << "Balancing Refractive Photon Map" << std::endl;
+//		reflectionMap->PrepareForIrradianceEstimation();
+//	}
+//
+//	if (USE_CAUSTIC_REFRACTIONS && USE_CACHED_REFRACTIONS) {
+//		readPhotonMap("refrmap.dat", refractionMap);
+//		std::cout << "Refraction Map: 100 percent" << std::endl;
+//	}
+//	else if (USE_CAUSTIC_REFRACTIONS) {
+//		refractionMap->AllocatePhotons(TOTAL_PHOTONS);
+//
+//		threads = std::vector<std::thread>(TOTAL_THREADS);
+//		for (int i = 0; i < TOTAL_THREADS; ++i) {
+//			threads.at(i) = std::thread(initPhotonRays, i, refractionMap, TOTAL_REFRACTION_PHOTONS, CAUSTIC_REFRACTION_SCALE, MapType::CAUSTIC_REFRACTIONS, "Refraction Map");
+//		}
+//
+//		for (int i = 0; i < TOTAL_THREADS; ++i) {
+//			threads.at(i).join();
+//			threads.at(i).~thread();
+//		}
+//		std::cout << "Balancing Refractive Photon Map" << std::endl;
+//		refractionMap->PrepareForIrradianceEstimation();
+//	}
+//#endif
+//
 #if USE_IRRADIANCE_CACHE
 	cyColorZNormal czn = cyColorZNormal();
 	irradianceMap = new IrradianceMap(COLOR_THRESHOLD, Z_THRESHOLD, NORMAL_THRESHOLD);
@@ -517,9 +674,19 @@ void render() {
 	}
 #endif
 
+	rendering = true;
+
+	/* Initialize the image as black */
+	const int width = renderImage.GetWidth();
+	const int height = renderImage.GetHeight();
+	std::fill(renderImage.GetPixels(), renderImage.GetPixels() + (width * height & sizeof(Color24)), Color24::Black());
+
+	sharedStatistics.resize(width*height);
+	for (int i = 0; i < TOTAL_THREADS; ++i) haltonIDX[i] = HaltonIDX();
+
 	threads = std::vector<std::thread>(TOTAL_THREADS);
 	for (int i = 0; i < TOTAL_THREADS; ++i) {
-		threads.at(i) = std::thread(render_internal, i);
+		threads.at(i) = std::thread(render_internal, i, true);
 	}
 
 	for (int i = 0; i < TOTAL_THREADS; ++i) {
@@ -539,61 +706,19 @@ void render() {
 	delete reflectionMap;
 }
 
-/* RAY TRACE */
-bool Trace(Ray ray, Node &n, HitInfo &info, int hitSide, float t_max) {
-	return Trace(Rays(ray, Ray(), Ray()), n, info, hitSide, t_max);
-}
-
-bool Trace(Rays rays, Node &n, HitInfo &info, int hitSide, float t_max) {
-	bool hit = false;
-
-	/* If the given ray doesn't hit the bounding box, quit. */
-	const Box &bb = n.GetChildBoundBox();
-	if (!bb.IntersectRay(rays.mainRay, t_max)) return false;
-
-	/* Otherwise, transform the main ray from parent space to child space */
-	Rays transformedRays = n.ToNodeCoords(rays);
-
-	/* If this node has an obj */
-	if (n.GetNodeObj()) {
-		/* If we hit that object's bounding box, test it*/
-		Box bb = n.GetNodeObj()->GetBoundBox();
-		if (bb.IntersectRay(transformedRays.mainRay, MIN(info.z, t_max))) {
-			float oldZ = info.z;
-			n.GetNodeObj()->IntersectRay(transformedRays, info, hitSide);
-			/* If the z value decreased, this node is the closest node that the ray hit */
-			if (info.z < oldZ) {
-				info.node = &n;
-				hit = true;
-				/* Shadow rays can quit tracing at this point. */
-				if (info.shadow && info.z < t_max)
-					return true;
-			}
-		}
-	}
-
-	/* Recurse through the children */
-	for (int i = 0; i < n.GetNumChild(); ++i) {
-		const Node *previous = info.node;
-		if (!Trace(transformedRays, *n.GetChild(i), info, hitSide, MIN(info.z, t_max))) continue;
-		/* If this is a shadow trace and we hit something, return. */
-		else if (info.shadow && info.z < t_max) return true;
-		else if (info.z < t_max) hit = true;
-
-		/* Transform hit data from child space to parent space */
-		n.GetChild(i)->FromNodeCoords(info);
-	}
-	return hit;
-}
-
-
-
 /* GUI */
 void BeginRender() {
 	/* Render asynchronously */
-	renderThread = new std::thread(render);
+	rendering = true;
+
+#if USE_SPPM
+	renderThread = new std::thread(render_sppm);
+#else
+	renderThread = new std::thread(render_pt);
+#endif
 }
 void StopRender() {
+	rendering = false;
 	int widthPow2 = nextPow2(camera.imgWidth);
 	int heightPow2 = nextPow2(camera.imgHeight);
 

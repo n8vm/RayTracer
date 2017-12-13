@@ -26,6 +26,7 @@ bool Sphere::IntersectRay(const Rays &rays, HitInfo &hInfo, int hitSide) const
 		if (hitSide & HIT_BACK) {
 			if (hInfo.z > tmax && tmax > SPHERE_BIAS) {
 				hInfo.z = tmax;
+				
 				if (hInfo.shadow) return true;
 
 				hInfo.p = rays.mainRay.p + tmax * rays.mainRay.dir;
@@ -54,6 +55,7 @@ bool Sphere::IntersectRay(const Rays &rays, HitInfo &hInfo, int hitSide) const
 			if (hInfo.z > tmin && tmin > SPHERE_BIAS) {
 
 				hInfo.z = tmin;
+
 				if (hInfo.shadow) return true;
 				hInfo.p = rays.mainRay.p + tmin * rays.mainRay.dir;
 				hInfo.N = hInfo.p;
@@ -220,6 +222,7 @@ bool TriObj::TraceBVHNode(const Rays &rays, HitInfo &hInfo, int hitSide, unsigne
 	
 	/* Test for ray box intersection */
 	double tmin = -INFINITY, tmax = INFINITY;
+	if (!b) return false;
 
 	for (int i = 0; i < 3; ++i) {
 		double t1 = (b[i] - rays.mainRay.p[i])*rays.mainRay.dir_inv[i];

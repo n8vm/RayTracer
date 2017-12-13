@@ -21,10 +21,8 @@ struct CommonRayInfo {
 
 CommonRayInfo getCommonCameraRayInfo();
 Ray getCameraRay(float i, float j, float ddi, float ddj, float dpi, float dpj, const CommonRayInfo &cri);
-bool Trace(Rays rays, Node &n, HitInfo &info, int hitSide=HIT_FRONT, float t_max = BIGFLOAT);
-bool Trace(Ray ray, Node &n, HitInfo &info, int hitSide = HIT_FRONT, float t_max = BIGFLOAT);
 void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, float &depth, cyPoint3f &normal, IlluminationType directType, IlluminationType indirectType);
-void render();
+void render_pt();
 
 inline bool compareRay(Ray &a, Ray &b) {
 	if (a.p.x - b.p.x > .00001f) return false;
@@ -62,7 +60,7 @@ private:
 	int _Refridx[TOTAL_BOUNCES] = {};
 public:
 #if USE_HALTON 
-	inline int AAidx() { return ++_AAidx; }
+	inline int AAidx() { _AAidx++; if (_AAidx > 1024) _AAidx = 0; return ++_AAidx; }
 	inline int DOFidx() { return ++_DOFidx; }
 	inline int SSidx() { return ++_SSidx; }
 	inline int GIidx(int bounce) { return ++_GIidx[bounce]; }
