@@ -159,9 +159,9 @@ void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, flo
 			if (SHOW_NORMALS) { sampleColor.r = (info.N.x + 1.0f); sampleColor.g = (info.N.y + 1.0f); sampleColor.b = (info.N.z + 1.0f); }
 			else if (USE_SPPM) {
 				statistics.totalPhotons = sppmItteration * TOTAL_PHOTONS;
+				statistics.totalRefractivePhotons = sppmItteration * TOTAL_REFRACTION_PHOTONS;
+				statistics.totalReflectivePhotons = sppmItteration * TOTAL_REFLECTION_PHOTONS;
 				sampleColor = hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, statistics, IlluminationType::PATH_TRACING, IlluminationType::PHOTON);
-				//if (statistics.itteration == 1)
-				//	statistics.totalFlux /= (float)statistics.totalHits;
 				statistics.additionalFlux /= (float)statistics.totalHits;
 				statistics.additionalReflectiveFlux /= (float)statistics.totalReflHits;
 				statistics.additionalRefractiveFlux /= (float)statistics.totalRefrHits;
