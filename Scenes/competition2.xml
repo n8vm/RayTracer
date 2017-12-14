@@ -6,10 +6,12 @@
 
 	</object>
 <object type="obj" name="competition2low/TeapotBody.001_cell.286.obj" material="mtl2"/>
-<object type="obj" name="competition2low/TeapotBody1.obj" material="redmetal">
-<!-- <scale value="32"/> -->
-        <!-- <rotate angle="90" x="1"/> -->
+<object type="obj" name="competition2low/fractureteapot.obj" material="redmetal">
         <translate z="-.1"/>
+</object>
+<object type="obj" name="competition2low/smallteapot.obj" material="mtl3"> 
+        <!-- <translate z=".1"/> -->
+
 </object>
 
 <!-- <object name="brokenTeapot1">
@@ -75,7 +77,7 @@
 <specular value="0.0"/>
 <!-- <glossiness value="80"/> -->
 <refraction value="1.0" index="1.52"/>
-<absorption r="0.0" g="1.000" b="1.000"/>
+<!-- <absorption r="0.0" g="1.000" b="1.000"/> -->
 </material>
 
 <material type="blinn" name="redmetal">
