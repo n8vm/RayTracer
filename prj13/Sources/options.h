@@ -57,8 +57,8 @@
 /*		Photon mapping is very quick compared to path tracing, but is more difficult to get to converge.
 			Irradiance maps are helpful to smooth photon mapping out*/
 #define USE_SPPM true // Stochastic Progressive Photon Mapping
-#define USE_PHOTON_MAPPING true
-#define USE_CAUSTIC_REFRACTIONS false
+#define USE_PHOTON_MAPPING false
+#define USE_CAUSTIC_REFRACTIONS true
 #define USE_CAUSTIC_REFLECTIONS false
 
 #define USE_CACHED_PHOTON_MAP true
@@ -74,23 +74,23 @@
 /* Specifies how many photons are taken into consideration when approximating irradiance. 
 		More samples means smoother (& more blurry) result, and may slow down rendering. */
 #define MAX_PHOTON_SAMPLES 10000
-#define MAX_CAUSTIC_REFLECTION_SAMPLES 4
-#define MAX_CAUSTIC_REFRACTION_SAMPLES 4
+#define MAX_CAUSTIC_REFLECTION_SAMPLES 10000
+#define MAX_CAUSTIC_REFRACTION_SAMPLES 10000
 
 /* More bounces are more realistic, but take more time and memory */
-#define PHOTON_BOUNCES 20
+#define PHOTON_BOUNCES 10
 
 /* Only used if not using cached photon map */
 #define TOTAL_PHOTONS 100000
-#define TOTAL_REFRACTION_PHOTONS 1
-#define TOTAL_REFLECTION_PHOTONS 1
+#define TOTAL_REFRACTION_PHOTONS 1000000
+#define TOTAL_REFLECTION_PHOTONS 10000
 
 // Higher values are slower, lower values are more noisy. This is scene dependent
-#define PHOTON_SPHERE_RADIUS 0.1 
-#define REFRACTION_SPHERE_RADIUS 0.1
-#define REFLECTION_SPHERE_RADIUS 0.1
+#define PHOTON_SPHERE_RADIUS 1.0 
+#define REFRACTION_SPHERE_RADIUS 1.0
+#define REFLECTION_SPHERE_RADIUS 1.0
 
 /* Controls the brightness of the photon maps */
 #define PHOTON_SCALE (8.0 * M_PI)
-#define CAUSTIC_REFRACTION_SCALE (/*4.0 * M_PI*/.8)
-#define CAUSTIC_REFLECTION_SCALE (/*4.0 * M_PI*/0.8)
+#define CAUSTIC_REFRACTION_SCALE (8.0 * M_PI)
+#define CAUSTIC_REFLECTION_SCALE (8.0 * M_PI)

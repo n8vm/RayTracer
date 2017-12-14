@@ -76,7 +76,7 @@
     </material>
  
     <material type="blinn" name="glossy4">
-      <diffuse r="0" g="0" b=".2"/>
+      <diffuse r="0" g="0" b="0"/>
             <absorption r="0.2" g="0.2" b="0.001"/>
 
       <specular value="0.8"/>
@@ -85,6 +85,7 @@
     </material>
 
     <material type="blinn" name="glossy3">
+      <diffuse r="0" g="0" b="0"/>
       <specular value="0.8"/>
       <glossiness value="50"/>
       <refraction index="2.0" value="0.8" glossiness="0.05"/>

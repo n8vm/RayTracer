@@ -557,24 +557,31 @@ void render_sppm() {
 		photonMap = new cyPhotonMap();
 		reflectionMap = new cyPhotonMap();
 		refractionMap = new cyPhotonMap();
-		photonMap->AllocatePhotons(TOTAL_PHOTONS);
-		reflectionMap->AllocatePhotons(TOTAL_REFLECTION_PHOTONS);
-		refractionMap->AllocatePhotons(TOTAL_REFRACTION_PHOTONS);
-		threads = std::vector<std::thread>(TOTAL_THREADS);
-		for (int i = 0; i < TOTAL_THREADS; ++i)
-			threads.at(i) = std::thread(initPhotonRays, i, photonMap, TOTAL_PHOTONS, PHOTON_SCALE, MapType::GLOBAL_ILLUMINATION, "Photon Map");
-		for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
-		photonMap->PrepareForIrradianceEstimation();
+		if (USE_PHOTON_MAPPING) {
+			photonMap->AllocatePhotons(TOTAL_PHOTONS);
+			threads = std::vector<std::thread>(TOTAL_THREADS);
+			for (int i = 0; i < TOTAL_THREADS; ++i)
+				threads.at(i) = std::thread(initPhotonRays, i, photonMap, TOTAL_PHOTONS, PHOTON_SCALE, MapType::GLOBAL_ILLUMINATION, "Photon Map");
+			for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+			photonMap->PrepareForIrradianceEstimation();
+		}
+		if (USE_CAUSTIC_REFLECTIONS) {
+			reflectionMap->AllocatePhotons(TOTAL_REFLECTION_PHOTONS);
+			threads = std::vector<std::thread>(TOTAL_THREADS);
+			for (int i = 0; i < TOTAL_THREADS; ++i)
+				threads.at(i) = std::thread(initPhotonRays, i, reflectionMap, TOTAL_REFLECTION_PHOTONS, CAUSTIC_REFRACTION_SCALE, MapType::CAUSTIC_REFLECTIONS, "Reflective Caustic Map");
+			for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+			reflectionMap->PrepareForIrradianceEstimation();
+		}
+		if (USE_CAUSTIC_REFRACTIONS) {
+			refractionMap->AllocatePhotons(TOTAL_REFRACTION_PHOTONS);
+			threads = std::vector<std::thread>(TOTAL_THREADS);
+			for (int i = 0; i < TOTAL_THREADS; ++i)
+				threads.at(i) = std::thread(initPhotonRays, i, refractionMap, TOTAL_REFRACTION_PHOTONS, CAUSTIC_REFRACTION_SCALE, MapType::CAUSTIC_REFRACTIONS, "Refractive Caustic Map");
+			for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
+			refractionMap->PrepareForIrradianceEstimation();
+		}
 
-		for (int i = 0; i < TOTAL_THREADS; ++i)
-			threads.at(i) = std::thread(initPhotonRays, i, reflectionMap, TOTAL_REFLECTION_PHOTONS, CAUSTIC_REFRACTION_SCALE, MapType::CAUSTIC_REFLECTIONS, "Reflective Caustic Map");
-		for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
-		photonMap->PrepareForIrradianceEstimation();
-
-		for (int i = 0; i < TOTAL_THREADS; ++i)
-			threads.at(i) = std::thread(initPhotonRays, i, refractionMap, TOTAL_REFRACTION_PHOTONS, CAUSTIC_REFRACTION_SCALE, MapType::CAUSTIC_REFRACTIONS, "Refractive Caustic Map");
-		for (int i = 0; i < TOTAL_THREADS; ++i) threads.at(i).join();
-		photonMap->PrepareForIrradianceEstimation();
 
 		/* Ray trace pass */
 		std::cout << "Ray Tracing " << sppmItteration << std::endl;
