@@ -3,7 +3,7 @@
 #define USE_HALTON true
 #define TOTAL_THREADS 5
 #define SHOW_VIEWPORT true
-#define SCENE "cornellWObj.xml"
+#define SCENE "competition2.xml"
 
 /* Camera Settings */
 #define SHOW_NORMALS false
@@ -32,7 +32,7 @@
 /* Light Settings */
 #define R_SQUARED_FALLOFF true
 #define DISABLE_SHADOWS false
-#define ENABLE_SOFT_SHADOWS false // THIS MESSES UP HALTON
+#define ENABLE_SOFT_SHADOWS true // THIS MESSES UP HALTON
 #define EARLY_SHADOW_TERMINATION false // BROKEN due to transparency
 #define MAX_SHADOW_SAMPLES 16
 #define MIN_SHADOW_SAMPLES 8
@@ -57,8 +57,8 @@
 /*		Photon mapping is very quick compared to path tracing, but is more difficult to get to converge.
 			Irradiance maps are helpful to smooth photon mapping out*/
 #define USE_SPPM true // Stochastic Progressive Photon Mapping
-#define USE_PHOTON_MAPPING false
-#define USE_CAUSTIC_REFRACTIONS true
+#define USE_PHOTON_MAPPING true
+#define USE_CAUSTIC_REFRACTIONS false
 #define USE_CAUSTIC_REFLECTIONS false
 
 #define USE_CACHED_PHOTON_MAP true
@@ -86,9 +86,9 @@
 #define TOTAL_REFLECTION_PHOTONS 10000
 
 // Higher values are slower, lower values are more noisy. This is scene dependent
-#define PHOTON_SPHERE_RADIUS 1.0 
-#define REFRACTION_SPHERE_RADIUS 1.0
-#define REFLECTION_SPHERE_RADIUS 1.0
+#define PHOTON_SPHERE_RADIUS .5 
+#define REFRACTION_SPHERE_RADIUS .5
+#define REFLECTION_SPHERE_RADIUS .5
 
 /* Controls the brightness of the photon maps */
 #define PHOTON_SCALE (8.0 * M_PI)
