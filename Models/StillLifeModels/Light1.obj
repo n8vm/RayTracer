@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ca6cb87e482c76161b984d210c50188943a039ecaa87dc68f8ab1ef834b29c90
-size 265
+# Blender v2.77 (sub 0) OBJ File: 'Still Scene.blend'
+# www.blender.org
+mtllib Light1.mtl
+o Light1_Plane.003
+v -6.860103 6.198131 0.157713
+v -6.860103 1.847117 0.157713
+v -6.860103 1.847117 3.619697
+v -6.860103 6.198132 3.619696
+usemtl Material.002
+s off
+f 1 4 3 2

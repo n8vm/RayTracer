@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fbcd310df9852797bd2d2a703491db4a5dbc169fee3340b1c8e032facb23cbcd
-size 244
+# Blender MTL File: 'luxoball2.blend'
+# Material Count: 1
+
+newmtl Pixar_Ball.001
+Ns 0.000000
+Ka 0.200000 0.200000 0.200000
+Kd 0.800000 0.800000 0.800000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
