@@ -1,7 +1,7 @@
 #pragma once
 /* General Settings */
 #define USE_HALTON true
-#define TOTAL_THREADS 5
+#define TOTAL_THREADS 16
 #define SHOW_VIEWPORT true
 #define SCENE "competition2.xml"
 
@@ -86,9 +86,9 @@
 #define TOTAL_REFLECTION_PHOTONS 10000
 
 // Higher values are slower, lower values are more noisy. This is scene dependent
-#define PHOTON_SPHERE_RADIUS .5 
-#define REFRACTION_SPHERE_RADIUS .5
-#define REFLECTION_SPHERE_RADIUS .5
+#define PHOTON_SPHERE_RADIUS .2 
+#define REFRACTION_SPHERE_RADIUS .2
+#define REFLECTION_SPHERE_RADIUS .2
 
 /* Controls the brightness of the photon maps */
 #define PHOTON_SCALE (8.0 * M_PI)
