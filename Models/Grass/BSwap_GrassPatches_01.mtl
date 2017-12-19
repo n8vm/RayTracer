@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c280e3211ead9cedfd440ea869830110768ea769b570629241e39f3fe15a74bf
-size 376
+# Blender MTL File: 'BSwap_GrassPatches_01.blend'
+# Material Count: 1
+
+newmtl Grass01
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 0
+map_Kd M:\Downloads\Blendswap\Foliage_Grass01_DiffuseMask.tga
+map_d M:\\Downloads\\Blendswap\\Foliage_Grass01_DiffuseMask.tga

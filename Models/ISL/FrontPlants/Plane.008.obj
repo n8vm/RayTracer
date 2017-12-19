@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9c7e2572c8fb1ac170be651f859b503debb79a4361e1cf35b9d39bb90088f3ae
-size 280
+# Blender v2.77 (sub 0) OBJ File: 'still_blendswap1.blend'
+# www.blender.org
+o Plane.008_Plane.009
+v -22.980684 7.388942 4.760655
+v -19.450859 18.226154 4.473401
+v -19.633293 6.732822 21.140587
+v -16.103468 17.570034 20.853333
+vn -0.9296 0.3081 0.2023
+s off
+f 2//1 1//1 3//1 4//1

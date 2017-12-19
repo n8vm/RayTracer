@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:77c82517eb37dedfc145f61c6e062eeb9a7e2c023c66d42f6b98489c89f805a8
-size 239
+# Blender MTL File: 'Still Scene.blend'
+# Material Count: 1
+
+newmtl chrome
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
