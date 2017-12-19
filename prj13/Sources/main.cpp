@@ -32,7 +32,7 @@ int main() {
 #if SHOW_VIEWPORT == true
 	ShowViewport();
 #else
-	render();
+	render_sppm();
 #endif 
 
 	return 0;

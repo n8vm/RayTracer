@@ -2,7 +2,7 @@
 /* General Settings */
 #define USE_HALTON true
 #define TOTAL_THREADS 8
-#define SHOW_VIEWPORT true
+#define SHOW_VIEWPORT false
 #define SCENE "competition2.xml"
 
 /* Camera Settings */
