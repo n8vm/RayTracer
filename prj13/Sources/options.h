@@ -1,7 +1,11 @@
 #pragma once
 /* General Settings */
 #define USE_HALTON true
+<<<<<<< Updated upstream
 #define TOTAL_THREADS 8
+=======
+#define TOTAL_THREADS 12
+>>>>>>> Stashed changes
 #define SHOW_VIEWPORT false
 #define SCENE "competition2.xml"
 
