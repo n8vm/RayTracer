@@ -198,7 +198,7 @@ Color MtlBlinn::ShadeDirect(const Rays &rays, const HitInfo &hInfo, const LightL
 				}
 			}
 		}
-
+	statistics.additionalDirectContribution += directCol;
 	return directCol;
 }
 
@@ -590,8 +590,8 @@ bool MtlBlinn::BouncePhoton(BounceInfo &bInfo, const HitInfo &hInfo) const {
 		OR we're CAUSTIC REFLECTIONS and the last ray was reflective
 		*/ // I BROKE THIS! FIX IT
 		if ( (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && (bInfo.bounceType == BounceType::DIFFUSE || bInfo.bounceType == BounceType::NONE) )
-			|| (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::REFRACTIVE)
-			|| (bInfo.mapType == MapType::GLOBAL_ILLUMINATION && bInfo.bounceType == BounceType::REFLECTIVE)) {
+			|| (bInfo.mapType == MapType::CAUSTIC_REFRACTIONS && bInfo.bounceType == BounceType::REFRACTIVE)
+			|| (bInfo.mapType == MapType::CAUSTIC_REFLECTIONS && bInfo.bounceType == BounceType::REFLECTIVE)) {
 			photonMutex.lock();
 			if (SAVE_DIRECT_PHOTON || bInfo.directHit == true) {
 				bInfo.map->AddPhoton(hInfo.p, (bInfo.ray.p - hInfo.p).GetNormalized(), bInfo.power);

@@ -30,7 +30,7 @@ inline unsigned int nextPow2(unsigned int v) {
 }
 inline unsigned int log2(int in) {
 	int i = 0;
-	while (in) {
+	while (in > 1) {
 		++i;
 		in /= 2;
 	}
@@ -40,11 +40,10 @@ inline uint32_t flipLevels(int z, int levels) {
 	int newZ = 0;
 	int mask;
 
-	for (int i = 0; i < levels; ++i) {
-		int mask = 3;
-		mask <<= (i * 2);
+	for (int i = 0; i < levels + 1; ++i) {
+		int mask = 3 << (i * 2);
 		int quadrent = (mask & z) >> (i * 2);
-		newZ |= (quadrent << ((levels - i - 2)) * 2);
+		newZ |= (quadrent << ((levels - 1 - i) * 2));
 	}
 	return newZ;
 }

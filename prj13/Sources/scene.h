@@ -300,7 +300,7 @@ struct PixelStatistics
 		additionalRefractiveFlux = Color::Black();
 
 		//directContribution = additionalDirectContribution;
-		directContribution += (additionalDirectContribution - directContribution) / (float)itteration;
+		directContribution = directContribution + (additionalDirectContribution - directContribution) / (float)itteration;
 		//indirectContribution += (additionalIndirectContribution - indirectContribution) / (float)itteration;
 		indirectContribution = additionalIndirectContribution;
 		indirectReflectionContribution = additionalIndirectReflectiveContribution;

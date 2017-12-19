@@ -1,13 +1,13 @@
 #pragma once
 /* General Settings */
 #define USE_HALTON true
-#define TOTAL_THREADS 5
+#define TOTAL_THREADS 8
 #define SHOW_VIEWPORT true
 #define SCENE "competition2.xml"
 
 /* Camera Settings */
 #define SHOW_NORMALS false
-#define TOTAL_BOUNCES 20
+#define TOTAL_BOUNCES 4
 #define MAX_SAMPLES 1
 #define MIN_SAMPLES 1
 #define MAX_THRESHOLD .01
@@ -59,7 +59,7 @@
 #define USE_SPPM true // Stochastic Progressive Photon Mapping
 #define USE_PHOTON_MAPPING true
 #define USE_CAUSTIC_REFRACTIONS false
-#define USE_CAUSTIC_REFLECTIONS false
+#define USE_CAUSTIC_REFLECTIONS true
 
 #define USE_CACHED_PHOTON_MAP true
 #define USE_CACHED_REFRACTIONS true
@@ -81,14 +81,14 @@
 #define PHOTON_BOUNCES 10
 
 /* Only used if not using cached photon map */
-#define TOTAL_PHOTONS 100000
-#define TOTAL_REFRACTION_PHOTONS 1000000
-#define TOTAL_REFLECTION_PHOTONS 10000
+#define TOTAL_PHOTONS 1000000
+#define TOTAL_REFRACTION_PHOTONS 10000
+#define TOTAL_REFLECTION_PHOTONS 25000
 
 // Higher values are slower, lower values are more noisy. This is scene dependent
-#define PHOTON_SPHERE_RADIUS .5 
-#define REFRACTION_SPHERE_RADIUS .5
-#define REFLECTION_SPHERE_RADIUS .5
+#define PHOTON_SPHERE_RADIUS .25 
+#define REFRACTION_SPHERE_RADIUS .25
+#define REFLECTION_SPHERE_RADIUS .25
 
 /* Controls the brightness of the photon maps */
 #define PHOTON_SCALE (8.0 * M_PI)

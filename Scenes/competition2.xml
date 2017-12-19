@@ -9,10 +9,10 @@
 <object type="obj" name="competition2low/fractureteapot.obj" material="redmetal">
         <translate z="-.1"/>
 </object>
-<object type="obj" name="competition2low/smallteapot.obj" material="mtl3"> 
-        <!-- <translate z=".1"/> -->
-
-</object>
+<!-- <object type="obj" name="competition2low/smallteapot.obj" material="mtl3"> 
+        <translate y="-.5" x="-.1"/>
+<scale value="1.2"/>
+</object> -->
 
 <!-- <object name="brokenTeapot1">
 	<object type="obj" name="competition/highres/m1.obj" material="mtl3"/>

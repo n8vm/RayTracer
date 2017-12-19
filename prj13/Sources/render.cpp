@@ -95,7 +95,6 @@ uint32_t calcZOrder(uint16_t xPos, uint16_t yPos)
 }
 int getZPixel(int pixelIdx, int numLevels, int &x, int &y) {
 	int zIdx = flipLevels(pixelIdx, numLevels);
-	int currentLevel = log2(zIdx);
 	x = DecodeMorton2X(zIdx);
 	y = DecodeMorton2Y(zIdx);
 	return zIdx;
@@ -161,11 +160,13 @@ void render_pixel(int tid, int x, int y, Color &avgColor, int &totalSamples, flo
 				statistics.totalPhotons = sppmItteration * TOTAL_PHOTONS;
 				statistics.totalRefractivePhotons = sppmItteration * TOTAL_REFRACTION_PHOTONS;
 				statistics.totalReflectivePhotons = sppmItteration * TOTAL_REFLECTION_PHOTONS;
-				sampleColor = hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, statistics, IlluminationType::PATH_TRACING, IlluminationType::PHOTON);
+				hitMat->Shade(rays, info, lights, TOTAL_BOUNCES, statistics, IlluminationType::PATH_TRACING, IlluminationType::PHOTON);
 				statistics.additionalFlux /= (float)statistics.totalHits;
 				statistics.additionalReflectiveFlux /= (float)statistics.totalReflHits;
 				statistics.additionalRefractiveFlux /= (float)statistics.totalRefrHits;
 				statistics.Update();
+
+				sampleColor = statistics.directContribution;
 				if (statistics.totalHits != 0)
 					sampleColor += (statistics.indirectContribution / (float)statistics.totalHits);
 				if (statistics.totalRefrHits != 0)
@@ -218,9 +219,9 @@ void render_internal(int tid, bool fillEmpty = true) {
 
 	int renderHeight = (RENDER_SUBIMAGE) ? YEND - YSTART : height;
 	//haltonIDX[tid] = HaltonIDX(); // Now done outside this function
-
+	fillEmpty = false;
 	/* While there are pixels to render */
-	while (pixelsDone < widthPow2 * heightPow2) {
+	while (pixelsDone < widthPow2 * widthPow2) {
 
 		/* Get pixel location*/
 		int pixel = std::atomic_fetch_add(&pixelsDone, 1);
@@ -276,7 +277,7 @@ void render_internal(int tid, bool fillEmpty = true) {
 		/* Progress report */
 		if ((pixelsDone % 10) == 0) {
 			g_display_mutex.lock();
-			std::cout << "\rImage Render: " << 100 * pixelsDone / (float)(widthPow2 * heightPow2) << " percent completed    ";
+			std::cout << "\rImage Render: " << 100 * pixelsDone / (float)(widthPow2 * widthPow2) << " percent completed    ";
 			g_display_mutex.unlock();
 		}
 	}
@@ -347,10 +348,12 @@ void initPhotonRays(int tid, cy::PhotonMap *map, int totalPhotons, float scale, 
 
 			/* Otherwise, bounce the photon off the material it hit. */
 			bool bounced = hitInfo.node->GetMaterial()->BouncePhoton(bInfo, hitInfo);
-			if (bInfo.photonRecorded) recordedPhotons++;
+			if (bInfo.photonRecorded) {
+				recordedPhotons++;
+				if (tid == 0 && recordedPhotons % 10 == 0) std::cout << "\r" << consoleKey << ": " << recordedPhotons<<" / " << totalPhotons << " percent done    ";
+			}
 			if (!bounced) break;
 		}
-		if (tid == 0 && recordedPhotons % 1000 == 0) std::cout << "\r" << consoleKey << ": " << recordedPhotons<<" / " << totalPhotons << " percent done    ";
 	}
 
 	if (tid == 0) {
